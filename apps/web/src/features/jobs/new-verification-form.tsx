@@ -1,0 +1,60 @@
+'use client';
+
+import { useState } from 'react';
+
+import { createSupabaseBrowserClient } from '../../lib/supabase/browser-client';
+import { resolveSubmissionRedirect } from './resolve-submission-redirect';
+import { submitVerification } from './submit-verification';
+
+export function NewVerificationForm() {
+  const [message, setMessage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  return (
+    <form
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const zip = form.get('sourceZip');
+        const prd = form.get('prd');
+        const requestText = form.get('requestText');
+        if (!(zip instanceof File) || typeof requestText !== 'string') return;
+        const supabase = createSupabaseBrowserClient();
+        if (supabase === null) return setMessage('认证服务尚未配置');
+        setSubmitting(true);
+        const result = await submitVerification({
+          requestText,
+          zip,
+          ...(prd instanceof File && prd.size > 0 ? { prd } : {}),
+          request: async (path, body) => {
+            const response = await fetch(path, { method: 'POST', body: JSON.stringify(body) });
+            return response.json();
+          },
+          upload: (path, token, file) =>
+            supabase.storage.from('uploads').uploadToSignedUrl(path, token, file),
+        });
+        setSubmitting(false);
+        const redirectTo = resolveSubmissionRedirect(result.ok);
+        if (redirectTo !== null) window.location.assign(redirectTo);
+        setMessage(result.ok ? '验收任务已创建' : result.message);
+      }}
+    >
+      <label>
+        验收需求
+        <textarea name="requestText" required />
+      </label>
+      <label>
+        项目 ZIP
+        <input name="sourceZip" type="file" accept=".zip,application/zip" required />
+      </label>
+      <label>
+        补充 PRD（可选）
+        <input name="prd" type="file" accept=".pdf,.docx,.md,.markdown" />
+      </label>
+      <button type="submit" disabled={submitting}>
+        创建验收任务
+      </button>
+      {message === null ? null : <p role="status">{message}</p>}
+    </form>
+  );
+}
