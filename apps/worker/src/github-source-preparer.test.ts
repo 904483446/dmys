@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createGitHubSourcePreparer } from './github-source-preparer.js';
@@ -25,7 +26,7 @@ describe('createGitHubSourcePreparer', () => {
         ref: 'main',
       }),
     ).resolves.toEqual(
-      expect.objectContaining({ projectDirectory: 'temporary-workspace\\generated-root' }),
+      expect.objectContaining({ projectDirectory: join('temporary-workspace', 'generated-root') }),
     );
     expect(downloadArchive).toHaveBeenCalledWith({
       installationId: 123,
