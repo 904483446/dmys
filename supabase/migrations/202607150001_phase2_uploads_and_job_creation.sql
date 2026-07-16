@@ -32,6 +32,8 @@ begin
     raise exception using errcode = 'P0001', message = 'FORBIDDEN';
   end if;
 
+  perform pg_advisory_xact_lock(hashtextextended(current_user_id::text, 0));
+
   if (select count(*) from public.verification_jobs
       where user_id = current_user_id
         and (created_at at time zone 'Asia/Shanghai')::date = (now() at time zone 'Asia/Shanghai')::date) >= 3 then
