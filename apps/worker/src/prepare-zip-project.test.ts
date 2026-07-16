@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import { prepareZipProject } from './prepare-zip-project.js';
@@ -28,7 +29,10 @@ describe('prepareZipProject', () => {
       },
       projectDirectory: 'temporary-workspace',
     });
-    expect(extract).toHaveBeenCalledWith('temporary-workspace\\source.zip', 'temporary-workspace');
+    expect(extract).toHaveBeenCalledWith(
+      join('temporary-workspace', 'source.zip'),
+      'temporary-workspace',
+    );
   });
 
   it('识别归档中的唯一顶层项目目录', async () => {
@@ -52,8 +56,10 @@ describe('prepareZipProject', () => {
         'source.zip',
       ),
     ).resolves.toEqual(
-      expect.objectContaining({ projectDirectory: 'temporary-workspace\\generated-root' }),
+      expect.objectContaining({ projectDirectory: join('temporary-workspace', 'generated-root') }),
     );
-    expect(readFile).toHaveBeenCalledWith('temporary-workspace\\generated-root\\package.json');
+    expect(readFile).toHaveBeenCalledWith(
+      join('temporary-workspace', 'generated-root', 'package.json'),
+    );
   });
 });

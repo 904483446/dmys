@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import { prepareZipSource } from './prepare-zip-source.js';
@@ -15,9 +16,9 @@ describe('prepareZipSource', () => {
     );
 
     expect(writeFile).toHaveBeenCalledWith(
-      'temporary-workspace\\source.zip',
+      join('temporary-workspace', 'source.zip'),
       Buffer.from('zip-content'),
     );
-    expect(result).toEqual({ archivePath: 'temporary-workspace\\source.zip' });
+    expect(result).toEqual({ archivePath: join('temporary-workspace', 'source.zip') });
   });
 });
