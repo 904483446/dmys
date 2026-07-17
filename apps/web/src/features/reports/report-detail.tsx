@@ -1,8 +1,9 @@
 import type { ReportDetail as Report } from './report-types.js';
+import { ReportActions } from './report-actions.js';
 
-type Props = { status: string; report: Report | null; errorMessage: string | null };
+type Props = { jobId: string; status: string; report: Report | null; errorMessage: string | null };
 
-export function ReportDetail({ status, report, errorMessage }: Props) {
+export function ReportDetail({ jobId, status, report, errorMessage }: Props) {
   if (report === null)
     return (
       <section className="demo" aria-live="polite">
@@ -26,7 +27,7 @@ export function ReportDetail({ status, report, errorMessage }: Props) {
       </section>
       <section className="report-section" aria-labelledby="report-issues">
         <h2 id="report-issues">问题与修复提示词</h2>
-        {report.issues.map((issue) => <div key={issue.title}><h3>{issue.title}</h3><p>严重级别：{issue.severity}</p><p>{issue.description}</p><p>修复提示词：{issue.repairPrompt}</p></div>)}
+        {report.issues.map((issue) => <div key={issue.title}><h3>{issue.title}</h3><p>严重级别：{issue.severity}</p><p>{issue.description}</p><p>修复提示词：{issue.repairPrompt}</p><ReportActions jobId={jobId} repairPrompt={issue.repairPrompt} /></div>)}
       </section>
     </article>
   );

@@ -14,13 +14,13 @@ const report = {
 
 describe('ReportDetail', () => {
   it('按结论、证据、问题顺序展示报告', () => {
-    const html = renderToStaticMarkup(<ReportDetail status="completed" report={report} errorMessage={null} />);
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
     expect(html.indexOf('自动验收建议')).toBeLessThan(html.indexOf('已验证功能'));
     expect(html.indexOf('已验证功能')).toBeLessThan(html.indexOf('问题与修复提示词'));
   });
 
   it('为失败任务提供可行动说明', () => {
-    const html = renderToStaticMarkup(<ReportDetail status="failed" report={null} errorMessage="构建失败" />);
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="failed" report={null} errorMessage="构建失败" />);
     expect(html).toContain('构建失败');
     expect(html).toContain('重新验收');
   });

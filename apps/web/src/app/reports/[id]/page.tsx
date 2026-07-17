@@ -47,7 +47,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
       <h1>验收报告</h1>
       <p>创建时间：{new Date(job.created_at).toLocaleString('zh-CN')}</p>
       <p>需求：{job.request_text}</p>
-      <ReportDetail status={job.status} report={report} errorMessage={job.error_message} />
+      <ReportDetail jobId={job.id} status={job.status} report={report} errorMessage={job.error_message} />
       <Link href="/reports">返回我的报告</Link>
     </main>
   );
