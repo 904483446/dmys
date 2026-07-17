@@ -1,9 +1,10 @@
 import type { ReportDetail as Report } from './report-types.js';
 import { ReportActions } from './report-actions.js';
+import type { ReportComparison } from './report-comparison.js';
 
-type Props = { jobId: string; status: string; report: Report | null; errorMessage: string | null };
+type Props = { jobId: string; status: string; report: Report | null; errorMessage: string | null; comparison?: ReportComparison | null };
 
-export function ReportDetail({ jobId, status, report, errorMessage }: Props) {
+export function ReportDetail({ jobId, status, report, errorMessage, comparison = null }: Props) {
   if (report === null)
     return (
       <section className="demo" aria-live="polite">
@@ -29,6 +30,7 @@ export function ReportDetail({ jobId, status, report, errorMessage }: Props) {
         <h2 id="report-issues">问题与修复提示词</h2>
         {report.issues.map((issue) => <div key={issue.title}><h3>{issue.title}</h3><p>严重级别：{issue.severity}</p><p>{issue.description}</p><p>修复提示词：{issue.repairPrompt}</p><ReportActions jobId={jobId} repairPrompt={issue.repairPrompt} /></div>)}
       </section>
+      {comparison !== null && <section className="report-section"><h2>与上次验收相比</h2><p>评分变化：{comparison.scoreDelta}；问题数量变化：{comparison.issueCountDelta}</p><p>新增问题：{comparison.newlyFound.join('、') || '无'}</p><p>已解决问题：{comparison.resolved.join('、') || '无'}</p></section>}
     </article>
   );
 }

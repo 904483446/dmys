@@ -18,5 +18,11 @@ export function ReportActions({ jobId, repairPrompt }: Props) {
     link.href = url; link.download = `vibeverify-report.${format === 'markdown' ? 'md' : 'pdf'}`; link.click(); URL.revokeObjectURL(url);
     setMessage('导出已开始');
   };
-  return <div><button type="button" onClick={() => void copy()}>复制修复提示词</button><button type="button" onClick={() => void download('markdown')}>导出 Markdown</button><button type="button" onClick={() => void download('pdf')}>导出 PDF</button><span aria-live="polite">{message}</span></div>;
+  const rerun = async () => {
+    const response = await fetch(`/api/v1/verification-jobs/${jobId}/rerun`, { method: 'POST', body: '{}' });
+    const body = (await response.json()) as { job?: { id: string } };
+    if (!response.ok || body.job === undefined) return setMessage('重新验收失败，请稍后重试');
+    window.location.assign(`/reports/${body.job.id}`);
+  };
+  return <div><button type="button" onClick={() => void copy()}>复制修复提示词</button><button type="button" onClick={() => void download('markdown')}>导出 Markdown</button><button type="button" onClick={() => void download('pdf')}>导出 PDF</button><button type="button" onClick={() => void rerun()}>重新验收</button><span aria-live="polite">{message}</span></div>;
 }

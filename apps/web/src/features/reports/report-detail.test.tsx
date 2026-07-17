@@ -19,6 +19,13 @@ describe('ReportDetail', () => {
     expect(html.indexOf('已验证功能')).toBeLessThan(html.indexOf('问题与修复提示词'));
   });
 
+  it('展示同项目历史对比摘要', () => {
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} comparison={{ scoreDelta: 10, issueCountDelta: -1, newlyFound: ['搜索失败'], resolved: ['保存失败'] }} />);
+    expect(html).toContain('与上次验收相比');
+    expect(html).toContain('搜索失败');
+    expect(html).toContain('保存失败');
+  });
+
   it('为失败任务提供可行动说明', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="failed" report={null} errorMessage="构建失败" />);
     expect(html).toContain('构建失败');
