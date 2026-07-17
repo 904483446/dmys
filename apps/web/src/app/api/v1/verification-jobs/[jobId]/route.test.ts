@@ -46,6 +46,8 @@ describe('GET /api/v1/verification-jobs/[jobId]', () => {
                   score: 90,
                   confidence: 80,
                   summary: '通过',
+                  verified_items: [],
+                  issues: [],
                 },
               },
               error: null,
@@ -62,7 +64,14 @@ describe('GET /api/v1/verification-jobs/[jobId]', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       job: expect.objectContaining({ id: 'job-id', status: 'completed' }),
-      report: { verdict: 'passed', score: 90, confidence: 80, summary: '通过' },
+      report: {
+        verdict: 'passed',
+        score: 90,
+        confidence: 80,
+        summary: '通过',
+        verifiedItems: [],
+        issues: [],
+      },
     });
   });
 });

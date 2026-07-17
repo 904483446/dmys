@@ -1,5 +1,6 @@
 node_modules/
 .pnpm-store/
+.worktrees/
 dist/
 coverage/
 .next/
@@ -7,6 +8,7 @@ apps/web/next-env.d.ts
 supabase/.temp/
 playwright-report/
 test-results/
+tmp/
 .env
 .env.local
 !.env.example

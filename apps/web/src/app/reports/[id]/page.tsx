@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { resolveProtectedRoute } from '../../../features/access/resolve-protected-route';
+import { compareReports } from '../../../features/reports/report-comparison';
+import { ReportDetail } from '../../../features/reports/report-detail';
+import { toReportDetail } from '../../../features/reports/report-types';
 import { createSupabaseServerClient } from '../../../lib/supabase/server-client';
 
 type ReportDetailPageProps = { params: Promise<{ id: string }> };
@@ -31,24 +34,26 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
   const { data: job } = await supabase
     .from('verification_jobs')
     .select(
-      'id, status, request_text, error_code, error_message, created_at, verification_reports(verdict, score, confidence, summary)',
+      'id, project_id, status, request_text, error_code, error_message, created_at, verification_reports(verdict, score, confidence, summary, verified_items, issues)',
     )
     .eq('id', id)
     .maybeSingle();
   if (job === null) redirect('/reports');
-  const report = job.verification_reports[0] ?? null;
+  const rawReport = job.verification_reports[0] ?? null;
+  const report = rawReport === null ? null : toReportDetail(rawReport);
+  const { data: previousJob } = report === null
+    ? { data: null }
+    : await supabase.from('verification_jobs').select('verification_reports(verdict, score, confidence, summary, verified_items, issues)').eq('project_id', job.project_id).lt('created_at', job.created_at).in('status', ['completed', 'failed']).order('created_at', { ascending: false }).limit(1).maybeSingle();
+  const previousRawReport = previousJob?.verification_reports[0] ?? null;
+  const comparison = previousRawReport === null || report === null ? null : compareReports(toReportDetail(previousRawReport), report);
 
   return (
     <main className="shell">
       <p className="eyebrow">VibeVerify / 私有报告</p>
       <h1>验收报告</h1>
-      <section className="demo" aria-label="验收任务详情">
-        <strong>当前状态：{job.status}</strong>
-        <span>创建时间：{new Date(job.created_at).toLocaleString('zh-CN')}</span>
-        <span>需求：{job.request_text}</span>
-        {job.error_message === null ? null : <span>说明：{job.error_message}</span>}
-        {report === null ? <span>报告正在准备。</span> : <span>结论：{report.summary}</span>}
-      </section>
+      <p>创建时间：{new Date(job.created_at).toLocaleString('zh-CN')}</p>
+      <p>需求：{job.request_text}</p>
+      <ReportDetail jobId={job.id} status={job.status} report={report} errorMessage={job.error_message} comparison={comparison} />
       <Link href="/reports">返回我的报告</Link>
     </main>
   );

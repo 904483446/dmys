@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { toReportDetail } from '../../../../../features/reports/report-types';
 import { createSupabaseServerClient } from '../../../../../lib/supabase/server-client';
 
 export async function GET(_request: Request, context: { params: Promise<{ jobId: string }> }) {
@@ -22,7 +23,7 @@ export async function GET(_request: Request, context: { params: Promise<{ jobId:
   const { data: job } = await supabase
     .from('verification_jobs')
     .select(
-      'id, status, request_text, error_code, error_message, created_at, started_at, finished_at, verification_reports(verdict, score, confidence, summary)',
+      'id, status, request_text, error_code, error_message, created_at, started_at, finished_at, verification_reports(verdict, score, confidence, summary, verified_items, issues)',
     )
     .eq('id', jobId)
     .maybeSingle();
@@ -31,6 +32,9 @@ export async function GET(_request: Request, context: { params: Promise<{ jobId:
       { error: { code: 'JOB_NOT_FOUND', message: '未找到该验收任务' } },
       { status: 404 },
     );
-  const { verification_reports: report, ...jobSummary } = job;
-  return NextResponse.json({ job: jobSummary, report: report ?? null });
+  const { verification_reports: rawReport, ...jobSummary } = job;
+  return NextResponse.json({
+    job: jobSummary,
+    report: rawReport === null ? null : toReportDetail(rawReport),
+  });
 }

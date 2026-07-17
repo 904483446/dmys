@@ -4,3 +4,5 @@ packages:
 allowBuilds:
   esbuild: false
   sharp: true
+overrides:
+  postcss: 8.5.18
