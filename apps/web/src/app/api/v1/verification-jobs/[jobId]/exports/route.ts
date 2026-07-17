@@ -1,6 +1,7 @@
-import { renderToBuffer } from '@react-pdf/renderer';
+import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer';
 import { NextResponse } from 'next/server';
 import { createElement } from 'react';
+import type { ReactElement } from 'react';
 import { z } from 'zod';
 
 import { renderReportMarkdown } from '../../../../../../features/reports/report-export';
@@ -58,8 +59,10 @@ export async function POST(request: Request, context: { params: Promise<{ jobId:
     return new NextResponse(renderReportMarkdown(report), {
       headers: { 'Content-Type': 'text/markdown; charset=utf-8', 'Content-Disposition': `attachment; filename="${fileName}"` },
     });
-  const pdf = await renderToBuffer(createElement(ReportPdfDocument, { report }));
-  return new NextResponse(pdf, {
+  const document = createElement(ReportPdfDocument, { report }) as ReactElement<DocumentProps>;
+  const pdf = await renderToBuffer(document);
+  const bytes = pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength) as ArrayBuffer;
+  return new NextResponse(bytes, {
     headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${fileName}"` },
   });
 }

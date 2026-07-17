@@ -69,3 +69,6 @@ h1 em {
   color: #a53e26;
   font-size: 1.4rem;
 }
+.report-detail { display: grid; gap: 1.5rem; max-width: 900px; margin-top: 3rem; }
+.report-section { display: grid; gap: 0.7rem; }
+.report-section h2 { margin: 0; }
