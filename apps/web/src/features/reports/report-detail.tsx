@@ -1,5 +1,5 @@
 import type { ReportDetail as Report } from './report-types.js';
-import { ReportActions } from './report-actions.js';
+import { ReportActions } from './report-actions';
 import type { ReportComparison } from './report-comparison.js';
 
 type Props = { jobId: string; status: string; report: Report | null; errorMessage: string | null; comparison?: ReportComparison | null };
