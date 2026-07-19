@@ -9,5 +9,7 @@ describe('我的报告页', () => {
 
     expect(html).toContain('还没有验收报告');
     expect(html).toContain('新建验收');
+    expect(html).toContain('reports-empty');
+    expect(html).toContain('从一次验收开始');
   });
 });

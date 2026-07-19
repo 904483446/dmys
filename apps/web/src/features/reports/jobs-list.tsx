@@ -25,9 +25,9 @@ export function JobsList({ initialJobs }: JobsListProps) {
 
   if (jobs.length === 0)
     return (
-      <section className="demo" aria-label="报告空状态">
+      <section className="reports-empty" aria-label="报告空状态">
         <strong>还没有验收报告</strong>
-        <span>提交项目后，这里会保留每次验收的私有结论和证据。</span>
+        <span>从一次验收开始。提交项目后，这里会保留每次验收的私有结论和证据。</span>
         <Link className="primary" href="/new">
           新建验收
         </Link>
@@ -35,10 +35,11 @@ export function JobsList({ initialJobs }: JobsListProps) {
     );
 
   return (
-    <section className="demo" aria-label="验收任务列表">
+    <section className="reports-list" aria-label="验收任务列表">
       {jobs.map((job) => (
-        <Link key={job.id} href={`/reports/${job.id}`}>
-          <strong>{job.status}</strong>
+        <Link className="report-row" key={job.id} href={`/reports/${job.id}`}>
+          <span className="report-status">{job.status}</span>
+          <strong>查看验收结果</strong>
           <span>{new Date(job.createdAt).toLocaleString('zh-CN')}</span>
         </Link>
       ))}
