@@ -12,10 +12,16 @@ describe('内测激活页', () => {
       </AccessPageContent>,
     );
 
-    expect(html).toContain('当前为邀请测试阶段');
+    expect(html).toContain('当前为邀请');
+    expect(html).toContain('测试阶段');
     expect(html).toContain('内测码');
     expect(html).toContain('激活访问权限');
     expect(html).toContain('access-layout');
     expect(html).toContain('仅限受邀用户');
+    expect(html).toContain('site-header');
+    expect(html).toContain('auth-saas-layout');
+    expect(html).toContain('auth-card');
+    expect(html).toContain('auth-title-primary');
+    expect(html).toContain('auth-title-secondary');
   });
 });
