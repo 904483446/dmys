@@ -9,7 +9,8 @@ describe('登录页', () => {
 
     expect(html).toContain('登录后开始');
     expect(html).toContain('验收');
-    expect(html).toContain('邮箱验证码');
+    expect(html).toContain('邮箱登录');
+    expect(html).toContain('发送验证码');
     expect(html).toContain('Google');
     expect(html).toContain('GitHub');
     expect(html).toContain('login-layout');
