@@ -44,13 +44,17 @@ export function NewVerificationForm() {
         验收需求
         <textarea name="requestText" required />
       </label>
-      <label>
-        项目 ZIP
-        <input name="sourceZip" type="file" accept=".zip,application/zip" required />
+      <label className="upload-control">
+        <span>项目 ZIP</span>
+        <input className="upload-input" name="sourceZip" type="file" accept=".zip,application/zip" required />
+        <span className="file-upload-button">选择 ZIP 文件</span>
+        <span className="upload-help">仅支持 .zip，最大 50MB</span>
       </label>
-      <label>
-        补充 PRD（可选）
-        <input name="prd" type="file" accept=".pdf,.docx,.md,.markdown" />
+      <label className="upload-control">
+        <span>补充 PRD（可选）</span>
+        <input className="upload-input" name="prd" type="file" accept=".pdf,.docx,.md,.markdown" />
+        <span className="file-upload-button">选择 PRD 文件</span>
+        <span className="upload-help">支持 PDF、DOCX、MD</span>
       </label>
       <p className="task-note">ZIP 用于本次验收；PRD 可帮助系统理解目标。提交后可在报告中查看状态。</p>
       <button className="primary" type="submit" disabled={submitting}>

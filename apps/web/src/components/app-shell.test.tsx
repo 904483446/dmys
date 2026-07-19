@@ -12,5 +12,6 @@ describe('AppShell', () => {
     expect(html).toContain('我的报告');
     expect(html).toContain('href="/reports"');
     expect(html).toContain('href="/new"');
+    expect(html.indexOf('href="/new"')).toBeLessThan(html.indexOf('href="/reports"'));
   });
 });

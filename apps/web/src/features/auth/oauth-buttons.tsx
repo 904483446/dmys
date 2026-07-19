@@ -25,6 +25,7 @@ export function OAuthButtons() {
 
   return (
     <section className="demo auth-oauth-options" aria-label="第三方登录">
+      <span className="auth-oauth-separator" aria-hidden="true" />
       <button type="button" onClick={() => signIn('google')}>
         使用 Google 登录
       </button>

@@ -9,8 +9,8 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
           VibeVerify
         </Link>
         <nav aria-label="工作台导航" className="app-navigation">
-          <Link href="/reports">验收报告</Link>
           <Link href="/new">新建验收</Link>
+          <Link href="/reports">验收报告</Link>
         </nav>
       </aside>
       <main className="app-main">

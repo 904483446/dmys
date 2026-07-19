@@ -12,5 +12,7 @@ describe('新建验收表单', () => {
     expect(html).toContain('创建验收任务');
     expect(html).toContain('task-form');
     expect(html).toContain('项目文件');
+    expect(html).toContain('upload-control');
+    expect(html).toContain('选择 ZIP 文件');
   });
 });
