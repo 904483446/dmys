@@ -9,5 +9,7 @@ describe('新建验收页', () => {
     expect(html).toContain('新建验收');
     expect(html).toContain('仅上传用于本次私有验收的项目文件');
     expect(html).toContain('创建验收任务');
+    expect(html).toContain('task-layout');
+    expect(html).toContain('你的代码只在受控 Worker 中处理');
   });
 });

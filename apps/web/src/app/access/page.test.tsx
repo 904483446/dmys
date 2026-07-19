@@ -15,5 +15,7 @@ describe('内测激活页', () => {
     expect(html).toContain('当前为邀请测试阶段');
     expect(html).toContain('内测码');
     expect(html).toContain('激活访问权限');
+    expect(html).toContain('access-layout');
+    expect(html).toContain('仅限受邀用户');
   });
 });

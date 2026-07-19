@@ -10,6 +10,12 @@ describe('首页', () => {
     expect(html).toContain('让 AI 生成的项目，');
     expect(html).toContain('可被真实验证。');
     expect(html).toContain('固定演示报告');
-    expect(html).toContain('新建验收');
+    expect(html).toContain('开始验收');
+    expect(html).toContain('验收结论');
+    expect(html).toContain('证据链');
+    expect(html).toContain('开始验收');
+    expect(html).toContain('home-hero');
+    expect(html).toContain('home-preview');
+    expect(html).toContain('home-evidence');
   });
 });

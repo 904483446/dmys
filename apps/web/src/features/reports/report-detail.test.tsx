@@ -17,6 +17,8 @@ describe('ReportDetail', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
     expect(html.indexOf('自动验收建议')).toBeLessThan(html.indexOf('已验证功能'));
     expect(html.indexOf('已验证功能')).toBeLessThan(html.indexOf('问题与修复提示词'));
+    expect(html).toContain('report-summary');
+    expect(html).toContain('report-issues');
   });
 
   it('展示同项目历史对比摘要', () => {
