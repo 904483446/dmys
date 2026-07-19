@@ -12,7 +12,6 @@ describe('首页', () => {
     expect(html).toContain('固定演示报告');
     expect(html).toContain('开始验收');
     expect(html).toContain('验收结论');
-    expect(html).toContain('证据链');
     expect(html).toContain('开始验收');
     expect(html).toContain('home-hero');
     expect(html).toContain('home-preview');
@@ -22,7 +21,11 @@ describe('首页', () => {
     expect(html).toContain('landing-product-preview');
     expect(html).toContain('landing-title-primary');
     expect(html).toContain('landing-title-accent');
-    expect(html).not.toContain('<p class="eyebrow">证据链</p>');
+    expect(html).not.toContain('不是“看起来完成”');
+    expect(html).toContain('目标与验收标准');
+    expect(html).toContain('浏览器与运行证据');
+    expect(html).toContain('可执行的修复建议');
+    expect(html).toContain('href="/#evidence"');
     expect(html).toContain('href="/new"');
   });
 });

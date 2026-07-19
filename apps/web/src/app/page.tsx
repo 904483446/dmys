@@ -43,7 +43,6 @@ export default function HomePage() {
         </section>
       </section>
       <section className="home-evidence landing-capabilities" id="how-it-works" aria-label="证据链说明">
-        <h2>不是“看起来完成”，而是每项结论都有可回看的依据。</h2>
         <ol id="evidence">
           <li>
             <strong>目标与验收标准</strong>
