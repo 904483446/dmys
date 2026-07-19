@@ -19,6 +19,9 @@ describe('ReportDetail', () => {
     expect(html.indexOf('已验证功能')).toBeLessThan(html.indexOf('问题与修复提示词'));
     expect(html).toContain('report-summary');
     expect(html).toContain('report-issues');
+    expect(html).toContain('report-metrics');
+    expect(html).toContain('report-evidence-panel');
+    expect(html).toContain('report-issues-panel');
   });
 
   it('展示同项目历史对比摘要', () => {
