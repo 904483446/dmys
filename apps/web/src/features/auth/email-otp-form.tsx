@@ -1,17 +1,27 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 
 import { createSupabaseBrowserClient } from '../../lib/supabase/browser-client';
 import { requestEmailOtp, verifyEmailOtp } from './email-otp';
+import { getOtpSendErrorMessage, OTP_RESEND_COOLDOWN_SECONDS } from './email-otp-feedback';
 
 export function EmailOtpForm() {
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
+  const [resendSeconds, setResendSeconds] = useState(0);
   const [step, setStep] = useState<'request' | 'verify'>('request');
   const [message, setMessage] = useState<string | null>(null);
-  async function requestCode(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    if (resendSeconds === 0) return;
+
+    const interval = window.setInterval(() => {
+      setResendSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [resendSeconds]);
+
+  async function sendCode() {
     if (email.trim() === '') {
       setMessage('请输入邮箱地址。');
       return;
@@ -23,12 +33,18 @@ export function EmailOtpForm() {
     }
     const { error } = await requestEmailOtp({ email: email.trim(), auth: supabase.auth });
     if (error !== null) {
-      setMessage('暂时无法发送验证码，请稍后重试。');
+      setMessage(getOtpSendErrorMessage(error));
       return;
     }
     setToken('');
+    setResendSeconds(OTP_RESEND_COOLDOWN_SECONDS);
     setStep('verify');
     setMessage(`验证码已发送至 ${email.trim()}，请在下方输入 6 位数字。`);
+  }
+
+  async function requestCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await sendCode();
   }
 
   async function verifyCode(event: FormEvent<HTMLFormElement>) {
@@ -54,8 +70,10 @@ export function EmailOtpForm() {
     return (
       <EmailOtpVerificationFields
         message={message}
+        onResend={sendCode}
         onSubmit={verifyCode}
         onTokenChange={(event) => setToken(event.target.value)}
+        resendSeconds={resendSeconds}
         token={token}
       />
     );
@@ -82,13 +100,17 @@ export function EmailOtpForm() {
 
 export function EmailOtpVerificationFields({
   message,
+  onResend,
   onSubmit,
   onTokenChange,
+  resendSeconds,
   token,
 }: {
   message: string | null;
+  onResend: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onTokenChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  resendSeconds: number;
   token: string;
 }) {
   return (
@@ -106,6 +128,9 @@ export function EmailOtpVerificationFields({
       />
       <button className="primary" type="submit">
         验证并登录
+      </button>
+      <button type="button" disabled={resendSeconds > 0} onClick={onResend}>
+        {resendSeconds > 0 ? `${resendSeconds} 秒后可重新发送` : '重新发送验证码'}
       </button>
       <p role="status">{message}</p>
     </form>
