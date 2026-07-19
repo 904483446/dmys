@@ -22,6 +22,7 @@ describe('首页', () => {
     expect(html).toContain('landing-product-preview');
     expect(html).toContain('landing-title-primary');
     expect(html).toContain('landing-title-accent');
+    expect(html).not.toContain('<p class="eyebrow">证据链</p>');
     expect(html).toContain('href="/new"');
   });
 });

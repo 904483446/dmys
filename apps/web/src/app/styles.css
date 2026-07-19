@@ -60,7 +60,7 @@ button, input, textarea { font: inherit; }
 .landing-preview-content { display: grid; gap: 1.3rem; padding: clamp(1.5rem, 4vw, 3rem); }
 .landing-preview-content > strong { font-size: clamp(2.2rem, 5vw, 4rem); }
 .landing-capabilities { padding-top: 84px; text-align: center; }
-.landing-capabilities h2 { margin: 18px auto 38px; }
+.landing-capabilities h2 { margin: 0 auto 38px; }
 .landing-capabilities ol { list-style: none; }
 .landing-capabilities li { display: grid; gap: 8px; padding: 8px 18px; text-align: left; }
 .landing-capabilities li::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: #ff7a2f; }
