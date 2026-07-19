@@ -45,6 +45,27 @@ button, input, textarea { font: inherit; }
 .home-evidence h2 { max-width: 18ch; color: #182033; font-size: clamp(2rem, 4vw, 3.6rem); letter-spacing: -.055em; line-height: 1.04; }
 .home-evidence ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 0; color: #4b5669; list-style-position: inside; }
 
+.landing-page { background: linear-gradient(180deg, #dff3fb 0, #f8f9fc 34rem); }
+.landing-page .site-header { border-bottom: 1px solid rgb(226 235 242 / .7); }
+.landing-hero { display: block; min-height: auto; padding-top: clamp(3rem, 7vw, 6rem); text-align: center; }
+.landing-copy { max-width: 760px; margin: 0 auto; }
+.landing-copy h1 { max-width: 11ch; margin: 16px auto; font-size: clamp(3.4rem, 7.6vw, 6.8rem); }
+.landing-copy .intro { margin: 0 auto; }
+.landing-copy .site-cta { margin-top: 28px; }
+.landing-product-preview { max-width: 860px; margin: clamp(3rem, 7vw, 5.5rem) auto 0; overflow: hidden; text-align: left; }
+.landing-preview-bar { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid #edf0f5; color: #6d778a; font-size: .82rem; }
+.landing-preview-bar strong { color: #182033; font-size: 1rem; letter-spacing: -.04em; }
+.landing-preview-content { display: grid; gap: 1.3rem; padding: clamp(1.5rem, 4vw, 3rem); }
+.landing-preview-content > strong { font-size: clamp(2.2rem, 5vw, 4rem); }
+.landing-capabilities { padding-top: 84px; text-align: center; }
+.landing-capabilities h2 { margin: 18px auto 38px; }
+.landing-capabilities ol { list-style: none; }
+.landing-capabilities li { display: grid; gap: 8px; padding: 8px 18px; text-align: left; }
+.landing-capabilities li::before { content: ""; width: 12px; height: 12px; border-radius: 4px; background: #ff7a2f; }
+.landing-capabilities li:nth-child(2)::before { background: #2d5be6; }
+.landing-capabilities li:nth-child(3)::before { background: #26a66a; }
+.landing-capabilities li strong { color: #182033; }.landing-capabilities li span { color: #6d778a; line-height: 1.6; }
+
 .auth-page, .task-layout { display: grid; min-height: 100vh; grid-template-columns: minmax(0, 1fr) minmax(320px, .8fr); align-items: center; gap: clamp(2rem, 8vw, 8rem); padding: clamp(2rem, 8vw, 7rem); background: linear-gradient(180deg, #e8f7fc 0, #f8f9fc 48%); }
 .auth-intro, .task-intro { max-width: 580px; }.auth-panel, .task-panel { padding: clamp(1.5rem, 4vw, 2.6rem); border: 1px solid #e5eaf3; border-radius: 16px; background: #fff; box-shadow: 0 18px 42px rgb(45 69 117 / .08); }
 .auth-panel .demo { margin-top: 0; max-width: none; padding: 0; border: 0; box-shadow: none; }

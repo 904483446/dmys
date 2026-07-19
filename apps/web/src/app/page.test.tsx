@@ -17,5 +17,9 @@ describe('首页', () => {
     expect(html).toContain('home-hero');
     expect(html).toContain('home-preview');
     expect(html).toContain('home-evidence');
+    expect(html).toContain('site-header');
+    expect(html).toContain('landing-hero');
+    expect(html).toContain('landing-product-preview');
+    expect(html).toContain('href="/new"');
   });
 });
