@@ -19,5 +19,6 @@ describe('登录页', () => {
     expect(html).toContain('auth-card');
     expect(html).toContain('auth-title-primary');
     expect(html).toContain('auth-title-secondary');
+    expect(html).toContain('auth-oauth-options');
   });
 });

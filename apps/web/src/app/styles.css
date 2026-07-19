@@ -76,6 +76,7 @@ button, input, textarea { font: inherit; }
 .auth-title-primary, .auth-title-secondary { display: block; white-space: nowrap; }
 .auth-card { box-shadow: 0 18px 42px rgb(45 69 117 / .08); }
 .auth-card .demo { gap: .75rem; }
+.auth-card .auth-oauth-options { margin-top: 1rem; }
 .auth-card .demo label { color: #334056; font-weight: 650; }
 .auth-card .demo input { min-height: 2.8rem; padding: .7rem; border: 1px solid #dce2ec; border-radius: 8px; }
 .auth-card .demo button:not(.primary) { min-height: 2.7rem; border: 1px solid #dce2ec; border-radius: 8px; background: #fff; color: #334056; font-weight: 600; }
