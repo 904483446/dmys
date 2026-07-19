@@ -50,6 +50,8 @@ button, input, textarea { font: inherit; }
 .landing-hero { display: block; min-height: auto; padding-top: clamp(3rem, 7vw, 6rem); text-align: center; }
 .landing-copy { max-width: 760px; margin: 0 auto; }
 .landing-copy h1 { max-width: 11ch; margin: 16px auto; font-size: clamp(3.4rem, 7.6vw, 6.8rem); }
+.landing-title-primary, .landing-title-accent { display: block; }
+.landing-title-accent { color: #2d5be6; font-style: normal; }
 .landing-copy .intro { margin: 0 auto; }
 .landing-copy .site-cta { margin-top: 28px; }
 .landing-product-preview { max-width: 860px; margin: clamp(3rem, 7vw, 5.5rem) auto 0; overflow: hidden; text-align: left; }
@@ -76,4 +78,5 @@ button, input, textarea { font: inherit; }
 .shell { min-height: 100vh; padding: 14vh max(2rem, 12vw); background: linear-gradient(180deg, #e8f7fc 0, #f8f9fc 48%); }.demo { display: grid; gap: .55rem; max-width: 520px; margin-top: 5rem; padding: 1.5rem; border: 1px solid #e5eaf3; border-radius: 16px; background: #fff; }.demo p { margin: 0; color: #778195; font-size: .72rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }.demo strong { color: #182033; font-size: 1.4rem; }.report-section { display: grid; gap: .7rem; }.report-section h2 { margin: 0; }
 
 @media (max-width: 767px) { .site-header { padding: 16px 20px; }.site-navigation { gap: 14px; }.site-navigation > a:not(.site-cta):not(:last-child) { display: none; }.app-shell { grid-template-columns: 1fr; }.app-sidebar { display: flex; align-items: center; gap: 18px; padding: 14px 20px; overflow-x: auto; border-right: 0; border-bottom: 1px solid #edf0f5; }.app-navigation { display: flex; gap: 4px; }.app-topbar { padding: 18px 20px; }.home-hero, .auth-page, .task-layout { grid-template-columns: 1fr; min-height: auto; padding: 42px 24px; }.home-copy h1, h1 { font-size: clamp(3rem, 14vw, 4.6rem); }.home-evidence ol { grid-template-columns: 1fr; }.auth-page, .task-layout { gap: 42px; }.report-row { grid-template-columns: 1fr; gap: .45rem; }.report-row span:last-child { color: #778195; font-size: .85rem; } }
+@media (min-width: 768px) { .landing-copy h1 { max-width: none; white-space: nowrap; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }

@@ -20,6 +20,8 @@ describe('首页', () => {
     expect(html).toContain('site-header');
     expect(html).toContain('landing-hero');
     expect(html).toContain('landing-product-preview');
+    expect(html).toContain('landing-title-primary');
+    expect(html).toContain('landing-title-accent');
     expect(html).toContain('href="/new"');
   });
 });

@@ -10,7 +10,8 @@ export default function HomePage() {
         <div className="home-copy landing-copy">
           <p className="eyebrow landing-kicker">VibeVerify / 私有功能验收</p>
           <h1>
-            让 AI 生成的项目，<em>可被真实验证。</em>
+            <span className="landing-title-primary">让 AI 生成的项目，</span>
+            <em className="landing-title-accent">可被真实验证。</em>
           </h1>
           <p className="intro">提交目标与项目文件，以真实浏览器运行证据生成可复核的私有验收报告。</p>
           <Link className="primary site-cta" href="/new">
