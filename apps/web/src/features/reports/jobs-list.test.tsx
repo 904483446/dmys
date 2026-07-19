@@ -14,4 +14,11 @@ describe('JobsList', () => {
     expect(html).toContain('href="/reports/job-1"');
     expect(html).toContain('查看验收结果');
   });
+
+  it('以紧凑空状态引导创建首个验收', () => {
+    const html = renderToStaticMarkup(<JobsList initialJobs={[]} />);
+
+    expect(html).toContain('reports-empty-compact');
+    expect(html).toContain('href="/new"');
+  });
 });

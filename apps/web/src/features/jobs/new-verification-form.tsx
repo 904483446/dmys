@@ -4,11 +4,13 @@ import { useState } from 'react';
 
 import { createSupabaseBrowserClient } from '../../lib/supabase/browser-client';
 import { resolveSubmissionRedirect } from './resolve-submission-redirect';
+import { describeSelectedUpload } from './selected-upload';
 import { submitVerification } from './submit-verification';
 
 export function NewVerificationForm() {
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedZip, setSelectedZip] = useState<File | null>(null);
 
   return (
     <form className="task-form"
@@ -46,9 +48,18 @@ export function NewVerificationForm() {
       </label>
       <label className="upload-control">
         <span>项目 ZIP</span>
-        <input className="upload-input" name="sourceZip" type="file" accept=".zip,application/zip" required />
-        <span className="file-upload-button">选择 ZIP 文件</span>
-        <span className="upload-help">仅支持 .zip，最大 50MB</span>
+        <input
+          className="upload-input"
+          name="sourceZip"
+          type="file"
+          accept=".zip,application/zip"
+          required
+          onChange={(event) => setSelectedZip(event.currentTarget.files?.[0] ?? null)}
+        />
+        <span className="file-upload-button">{selectedZip === null ? '选择 ZIP 文件' : '更换 ZIP 文件'}</span>
+        <span className={selectedZip === null ? 'upload-help' : 'upload-help upload-selected'}>
+          {selectedZip === null ? '仅支持 .zip，最大 50MB；提交后上传' : describeSelectedUpload(selectedZip)}
+        </span>
       </label>
       <label className="upload-control">
         <span>补充 PRD（可选）</span>
