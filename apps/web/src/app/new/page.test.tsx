@@ -11,5 +11,9 @@ describe('新建验收页', () => {
     expect(html).toContain('创建验收任务');
     expect(html).toContain('task-layout');
     expect(html).toContain('你的代码只在受控 Worker 中处理');
+    expect(html).toContain('app-shell');
+    expect(html).toContain('workspace-page');
+    expect(html).toContain('workspace-card');
+    expect(html).toContain('sourceZip');
   });
 });

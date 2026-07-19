@@ -81,6 +81,11 @@ button, input, textarea { font: inherit; }
 .auth-card .demo input { min-height: 2.8rem; padding: .7rem; border: 1px solid #dce2ec; border-radius: 8px; }
 .auth-card .demo button:not(.primary) { min-height: 2.7rem; border: 1px solid #dce2ec; border-radius: 8px; background: #fff; color: #334056; font-weight: 600; }
 .auth-card .demo button:not(.primary):hover { background: #f0f4ff; }
+
+.workspace-page { display: grid; grid-template-columns: minmax(0, .85fr) minmax(420px, 1.15fr); align-items: start; gap: 32px; max-width: 1180px; margin: 0 auto; padding: 38px 32px; background: transparent; }
+.workspace-heading { padding: 10px 0; }.workspace-heading h1 { max-width: none; margin: 14px 0; font-family: "Noto Sans SC", "Segoe UI", sans-serif; font-size: clamp(2.1rem, 4vw, 3.5rem); font-weight: 760; letter-spacing: -.06em; line-height: 1; }.workspace-heading > p:last-child { max-width: 40rem; color: #6d778a; line-height: 1.7; }
+.workspace-card { padding: 28px; border: 1px solid #e5eaf3; border-radius: 16px; background: #fff; box-shadow: 0 18px 42px rgb(45 69 117 / .06); }
+.new-workspace .task-panel { box-shadow: 0 18px 42px rgb(45 69 117 / .06); }
 .task-form { display: grid; gap: 1.15rem; }.task-form label { display: grid; gap: .5rem; color: #334056; font-weight: 650; }.task-form input, .task-form textarea { width: 100%; min-height: 2.8rem; padding: .7rem; border: 1px solid #dce2ec; border-radius: 8px; background: #fff; }.task-form textarea { min-height: 8rem; resize: vertical; }.task-note { margin: 0; color: #6d778a; line-height: 1.6; }
 
 .reports-empty, .reports-list { display: grid; gap: 1rem; max-width: 960px; margin-top: 3rem; padding: clamp(1.5rem, 4vw, 2.6rem); border: 1px solid #e5eaf3; border-radius: 16px; background: #fff; }.report-row { display: grid; grid-template-columns: 120px 1fr auto; align-items: center; gap: 1rem; padding: 18px 0; border-bottom: 1px solid #edf0f5; color: inherit; text-decoration: none; }.report-row:last-child { border-bottom: 0; }.report-status { color: #2d5be6; font-family: inherit; font-size: .78rem; font-weight: 750; text-transform: uppercase; }
@@ -89,5 +94,6 @@ button, input, textarea { font: inherit; }
 
 @media (max-width: 767px) { .site-header { padding: 16px 20px; }.site-navigation { gap: 14px; }.site-navigation > a:not(.site-cta):not(:last-child) { display: none; }.app-shell { grid-template-columns: 1fr; }.app-sidebar { display: flex; align-items: center; gap: 18px; padding: 14px 20px; overflow-x: auto; border-right: 0; border-bottom: 1px solid #edf0f5; }.app-navigation { display: flex; gap: 4px; }.app-topbar { padding: 18px 20px; }.home-hero, .auth-page, .task-layout { grid-template-columns: 1fr; min-height: auto; padding: 42px 24px; }.home-copy h1, h1 { font-size: clamp(3rem, 14vw, 4.6rem); }.home-evidence ol { grid-template-columns: 1fr; }.auth-page, .task-layout { gap: 42px; }.report-row { grid-template-columns: 1fr; gap: .45rem; }.report-row span:last-child { color: #778195; font-size: .85rem; } }
 @media (max-width: 767px) { .auth-saas-content { grid-template-columns: 1fr; min-height: auto; gap: 42px; padding: 42px 24px; }.auth-saas-content .auth-intro h1 { font-size: clamp(3rem, 14vw, 4.6rem); } }
+@media (max-width: 767px) { .workspace-page { grid-template-columns: 1fr; padding: 26px 20px; }.workspace-card { padding: 22px; } }
 @media (min-width: 768px) { .landing-copy h1 { max-width: none; white-space: nowrap; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
