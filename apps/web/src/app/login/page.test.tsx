@@ -11,5 +11,7 @@ describe('登录页', () => {
     expect(html).toContain('邮箱验证码');
     expect(html).toContain('Google');
     expect(html).toContain('GitHub');
+    expect(html).toContain('login-layout');
+    expect(html).toContain('安全登录');
   });
 });
