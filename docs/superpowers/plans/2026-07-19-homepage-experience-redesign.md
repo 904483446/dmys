@@ -1,88 +1,46 @@
-# Homepage Experience Redesign Implementation Plan
+# 首页体验重构实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **供 Agent 执行：** 必须使用任务分解方式逐步实施；每一步都用复选框追踪。
 
-**Goal:** Rebuild the VibeVerify homepage into a responsive, evidence-first SaaS landing page without changing its existing route or CTA behavior.
+**目标：** 在不改变首页路由和“新建验收”跳转逻辑的前提下，将 VibeVerify 首页重构为响应式、证据优先的 SaaS Landing Page。
 
-**Architecture:** Keep `app/page.tsx` as a Server Component and preserve the `/new` link. Add semantic homepage sections and page-scoped CSS classes to `styles.css`; no API, state, or dependency changes.
+**实现方式：** `app/page.tsx` 保持 Server Component，保留 `/new` 链接。仅增加语义化首页区块和对应 CSS，不改 API、状态或依赖。
 
-**Tech Stack:** Next.js App Router, React, TypeScript, Vitest, native CSS.
+**技术栈：** Next.js App Router、React、TypeScript、Vitest、原生 CSS。
 
 ---
 
-### Task 1: Lock the homepage content contract
+### 任务 1：锁定首页内容结构
 
-**Files:**
-- Modify: `apps/web/src/app/page.test.tsx`
-- Modify: `apps/web/src/app/page.tsx`
+**文件：**
 
-- [ ] **Step 1: Write the failing test**
+- 修改：`apps/web/src/app/page.test.tsx`
+- 修改：`apps/web/src/app/page.tsx`
 
-```tsx
-expect(html).toContain('验收结论');
-expect(html).toContain('证据链');
-expect(html).toContain('开始验收');
-```
+- [ ] 先在测试中断言页面包含“验收结论”“证据链”“开始验收”。
+- [ ] 运行 `pnpm --filter @vibeverify/web test -- page.test.tsx`，确认因这些内容尚不存在而失败。
+- [ ] 将当前单一 Hero/演示卡改为三个语义区块：价值说明、产品预览、证据说明；现有 CTA 仍跳转 `/new`。
+- [ ] 再次运行同一测试，确认通过。
+- [ ] 提交：`feat(web): restructure homepage content`。
 
-- [ ] **Step 2: Run the test to verify it fails**
+### 任务 2：实现响应式视觉系统
 
-Run: `pnpm --filter @vibeverify/web test -- page.test.tsx`
+**文件：**
 
-Expected: FAIL because the existing homepage has none of the new evidence-first labels.
+- 修改：`apps/web/src/app/page.test.tsx`
+- 修改：`apps/web/src/app/styles.css`
 
-- [ ] **Step 3: Implement semantic homepage sections**
+- [ ] 先在测试中断言页面含有 `home-hero`、`home-preview`、`home-evidence` 类名。
+- [ ] 运行页面测试，确认因类名尚不存在而失败。
+- [ ] 桌面端使用内容最大宽度与双栏网格；760px 以下自动单栏。标题采用稳定两行布局，避免中文逐字断行；补充 CTA 状态和 `prefers-reduced-motion` 降级。
+- [ ] 不修改通用报告样式，首页样式均以 `home-` 前缀隔离。
+- [ ] 运行：
 
-Keep the existing `Link` destination `/new`; replace the single hero/demo sequence with a hero copy block, a product-preview panel, and an evidence explainer section. Use headings and text already consistent with the product: “验收结论”, “证据链”, and “开始验收”.
-
-- [ ] **Step 4: Run the test to verify it passes**
-
-Run: `pnpm --filter @vibeverify/web test -- page.test.tsx`
-
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add apps/web/src/app/page.tsx apps/web/src/app/page.test.tsx
-git commit -m "feat(web): restructure homepage content"
-```
-
-### Task 2: Implement responsive visual system
-
-**Files:**
-- Modify: `apps/web/src/app/styles.css`
-
-- [ ] **Step 1: Write the failing visual assertion**
-
-Add class assertions to `apps/web/src/app/page.test.tsx` for `home-hero`, `home-preview`, and `home-evidence`.
-
-- [ ] **Step 2: Run the test to verify it fails**
-
-Run: `pnpm --filter @vibeverify/web test -- page.test.tsx`
-
-Expected: FAIL because those classes do not exist in the markup.
-
-- [ ] **Step 3: Implement CSS**
-
-Define a contained two-column desktop grid, a single-column layout below 760px, separate display/body typography, stable two-line headline wrapping, high-contrast CTA states, and reduced-motion fallback. Do not alter generic report styles.
-
-- [ ] **Step 4: Verify**
-
-Run:
-
-```bash
+```powershell
 pnpm --filter @vibeverify/web test -- page.test.tsx
 pnpm --filter @vibeverify/web typecheck
 pnpm --filter @vibeverify/web build
 ```
 
-Expected: all commands pass.
-
-- [ ] **Step 5: Visual check and commit**
-
-Inspect desktop and 390px-wide browser screenshots. Confirm no one-character Chinese headline lines, no horizontal scrolling, and that “开始验收” remains visible.
-
-```bash
-git add apps/web/src/app/styles.css apps/web/src/app/page.tsx apps/web/src/app/page.test.tsx
-git commit -m "feat(web): polish responsive homepage experience"
-```
+- [ ] 检查桌面与 390px 宽屏截图：标题没有单字行、没有横向滚动、“开始验收”始终可见。
+- [ ] 提交：`feat(web): polish responsive homepage experience`。

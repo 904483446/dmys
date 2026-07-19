@@ -1,4 +1,4 @@
-# VibeVerify 前端体验重构设计
+# VibeVerify 前端体验重构设计说明
 
 ## 目标
 
