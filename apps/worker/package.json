@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "lint": "eslint src --max-warnings=0 --no-error-on-unmatched-pattern",
-    "start": "node --experimental-strip-types src/main.ts",
+    "start": "tsx src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
@@ -16,6 +16,7 @@
     "yauzl": "^3.4.0"
   },
   "devDependencies": {
-    "@types/yauzl": "^2.10.3"
+    "@types/yauzl": "^2.10.3",
+    "tsx": "^4.23.1"
   }
 }
