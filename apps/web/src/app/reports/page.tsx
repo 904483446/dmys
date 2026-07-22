@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 import { AppShell } from '../../components/app-shell';
 import { resolveProtectedRoute } from '../../features/access/resolve-protected-route';
@@ -26,13 +27,26 @@ export default async function ReportsPage() {
   return (
     <AppShell title="我的报告">
       <main className="shell workspace-page reports-workspace">
-        <header className="workspace-heading">
-          <p className="eyebrow">验收工作区</p>
-          <h1>我的报告</h1>
-          <p>查看每次验收的状态、结论和后续修复建议。</p>
-        </header>
+        <ReportsWorkspaceHeading />
         <JobsList initialJobs={(jobs ?? []).map((job) => ({ id: job.id, status: job.status, createdAt: job.created_at }))} />
       </main>
     </AppShell>
+  );
+}
+
+export function ReportsWorkspaceHeading() {
+  return (
+    <header className="workspace-heading">
+      <div className="workspace-heading-row">
+        <div>
+          <p className="eyebrow">验收工作区</p>
+          <h1>我的报告</h1>
+          <p>查看每次验收的状态、结论和后续修复建议。</p>
+        </div>
+        <Link className="primary" href="/new">
+          + 新建验收
+        </Link>
+      </div>
+    </header>
   );
 }

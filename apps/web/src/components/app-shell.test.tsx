@@ -14,4 +14,12 @@ describe('AppShell', () => {
     expect(html).toContain('href="/new"');
     expect(html.indexOf('href="/new"')).toBeLessThan(html.indexOf('href="/reports"'));
   });
+
+  it('高亮当前工作台导航项', () => {
+    const reportsHtml = renderToStaticMarkup(<AppShell title="我的报告">内容</AppShell>);
+    const newHtml = renderToStaticMarkup(<AppShell title="新建验收">内容</AppShell>);
+
+    expect(reportsHtml).toMatch(/href="\/reports"[^>]*class="app-navigation-active"|class="app-navigation-active"[^>]*href="\/reports"/);
+    expect(newHtml).toMatch(/href="\/new"[^>]*class="app-navigation-active"|class="app-navigation-active"[^>]*href="\/new"/);
+  });
 });
