@@ -9,7 +9,7 @@ describe('email OTP feedback', () => {
 
   it('将 Supabase 的限流错误转为明确提示', () => {
     expect(getOtpSendErrorMessage({ status: 429, message: 'Email rate limit exceeded' })).toBe(
-      '发送过于频繁，请 1 分钟后再试。',
+      '发送受限：当前测试环境每小时最多发送 2 封邮件，请稍后再试。',
     );
   });
 });

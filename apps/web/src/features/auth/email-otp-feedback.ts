@@ -7,7 +7,7 @@ export function getOtpSendErrorMessage(error: unknown): string {
       status === 429 ||
       (typeof message === 'string' && /rate limit|too many|security purposes/i.test(message))
     ) {
-      return '发送过于频繁，请 1 分钟后再试。';
+      return '发送受限：当前测试环境每小时最多发送 2 封邮件，请稍后再试。';
     }
   }
 
