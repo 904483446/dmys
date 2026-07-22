@@ -1,6 +1,8 @@
 import { createDefaultWorkerProcessor } from './default-worker-processor.js';
+import { startHealthServer } from './health-server.js';
 import { createWorkerRuntime, createWorkerServiceClient } from './index.js';
 import { runWorkerLoop } from './worker-loop.js';
+import { runWorkerWithHealth } from './worker-service.js';
 import { readWorkerSupabaseConfig } from './worker-supabase.js';
 
 const config = readWorkerSupabaseConfig(process.env);
@@ -31,9 +33,13 @@ process.once('SIGTERM', () => {
 process.once('SIGINT', () => {
   running = false;
 });
-await runWorkerLoop({
-  runOnce: runtime.runOnce,
-  sleep: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
-  shouldContinue: () => running,
-  idleDelayMs: 5_000,
+await runWorkerWithHealth({
+  startHealthServer: () => startHealthServer({ port: Number(process.env.PORT ?? 3000) }),
+  runWorkerLoop: () =>
+    runWorkerLoop({
+      runOnce: runtime.runOnce,
+      sleep: (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
+      shouldContinue: () => running,
+      idleDelayMs: 5_000,
+    }),
 });

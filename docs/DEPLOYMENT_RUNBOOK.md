@@ -33,7 +33,7 @@ Railway（Worker）配置：
 
 1. 在 Supabase 生产项目执行迁移：`supabase db push --linked`；确认 RLS 已启用且 Storage bucket 为私有。
 2. 在 Vercel 导入仓库，Root Directory 设为 `apps/web`，填入 Web 变量并部署。
-3. 在 Railway 创建 Worker 服务，启动命令使用项目现有 Worker 启动脚本；填入 Worker 变量，副本数固定为 1，并配置健康检查。
+3. 在 Railway 创建 Worker 服务：从仓库根目录使用 `Dockerfile` 构建（不要将 Root Directory 设为 `apps/worker`，它依赖 workspace 内的 `packages/prompting`）；填入 Worker 变量；副本数固定为 1；Healthcheck Path 设为 `/health`。首次部署在日志中确认没有 `WORKER_CONFIGURATION_MISSING`，且 Railway 健康状态为通过后，才创建 ZIP 验收任务。
 4. 将 GitHub App 的 Homepage URL 与 Callback URL 指向 Vercel 生产域名；最小权限只授予 Contents: Read。
 5. 使用内测账户完成一次 ZIP 验收；再完成一次 GitHub 授权、撤销授权和报告导出验证。
 
