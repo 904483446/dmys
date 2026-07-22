@@ -1,30 +1,18 @@
-type EmailOtpAuth = {
-  signInWithOtp(credentials: { email: string }): Promise<{ error: unknown | null }>;
-  verifyOtp(credentials: {
+type EmailMagicLinkAuth = {
+  signInWithOtp(credentials: {
     email: string;
-    token: string;
-    type: 'email';
+    options: { emailRedirectTo: string };
   }): Promise<{ error: unknown | null }>;
 };
 
 export function requestEmailOtp({
   email,
+  redirectTo,
   auth,
 }: {
   email: string;
-  auth: Pick<EmailOtpAuth, 'signInWithOtp'>;
+  redirectTo: string;
+  auth: EmailMagicLinkAuth;
 }) {
-  return auth.signInWithOtp({ email });
-}
-
-export function verifyEmailOtp({
-  email,
-  token,
-  auth,
-}: {
-  email: string;
-  token: string;
-  auth: Pick<EmailOtpAuth, 'verifyOtp'>;
-}) {
-  return auth.verifyOtp({ email, token, type: 'email' });
+  return auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
 }

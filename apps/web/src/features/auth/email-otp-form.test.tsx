@@ -1,25 +1,23 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { EmailOtpVerificationFields } from './email-otp-form.js';
+import { EmailMagicLinkRequestFields } from './email-otp-form.js';
 
-describe('EmailOtpVerificationFields', () => {
-  it('验证码输入框保持为空，且不提供更换邮箱按钮', () => {
+describe('EmailMagicLinkRequestFields', () => {
+  it('只渲染邮箱和发送登录链接按钮', () => {
     const html = renderToStaticMarkup(
-      <EmailOtpVerificationFields
-        message="验证码已发送。"
-        onResend={() => undefined}
+      <EmailMagicLinkRequestFields
+        email=""
+        message="登录链接已发送。"
+        onEmailChange={() => undefined}
         onSubmit={() => undefined}
-        onTokenChange={() => undefined}
-        resendSeconds={60}
-        token=""
       />,
     );
 
-    expect(html).toContain('name="token"');
+    expect(html).toContain('name="email"');
     expect(html).toContain('value=""');
-    expect(html).not.toContain('更换邮箱');
-    expect(html).toContain('60 秒后可重新发送');
-    expect(html).toContain('disabled=""');
+    expect(html).toContain('发送登录链接');
+    expect(html).not.toContain('name="token"');
+    expect(html).not.toContain('重新发送验证码');
   });
 });

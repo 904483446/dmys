@@ -1,5 +1,3 @@
-export const OTP_RESEND_COOLDOWN_SECONDS = 60;
-
 export function getOtpSendErrorMessage(error: unknown): string {
   if (typeof error === 'object' && error !== null) {
     const { message, status } = error as { message?: unknown; status?: unknown };
@@ -11,5 +9,5 @@ export function getOtpSendErrorMessage(error: unknown): string {
     }
   }
 
-  return '暂时无法发送验证码，请稍后重试。';
+  return '暂时无法发送登录链接，请稍后重试。';
 }
