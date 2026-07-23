@@ -39,6 +39,19 @@ export function firstEmbeddedReport(input: unknown): unknown | null {
   return input ?? null;
 }
 
+export function formatReportCreatedAt(input: string): string {
+  return new Intl.DateTimeFormat('zh-CN', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(new Date(input));
+}
+
 export function toReportDetail(input: unknown): ReportDetail {
   const report = rawReportSchema.parse(input);
 

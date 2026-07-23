@@ -5,8 +5,16 @@ import * as reportTypes from './report-types.js';
 const firstEmbeddedReport = (reportTypes as Record<string, unknown>).firstEmbeddedReport as
   | ((input: unknown) => unknown | null)
   | undefined;
+const formatReportCreatedAt = (reportTypes as Record<string, unknown>).formatReportCreatedAt as
+  | ((input: string) => string)
+  | undefined;
 
 describe('toReportDetail', () => {
+  it('formats report timestamps in China Standard Time on the server', () => {
+    expect(formatReportCreatedAt).toBeTypeOf('function');
+    expect(formatReportCreatedAt?.('2026-07-23T08:50:51.000Z')).toContain('16:50:51');
+  });
+
   it('returns null when a failed job has no embedded report', () => {
     expect(firstEmbeddedReport).toBeTypeOf('function');
     expect(firstEmbeddedReport?.(null)).toBeNull();

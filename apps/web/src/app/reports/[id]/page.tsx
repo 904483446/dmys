@@ -5,7 +5,7 @@ import { AppShell } from '../../../components/app-shell';
 import { resolveProtectedRoute } from '../../../features/access/resolve-protected-route';
 import { compareReports } from '../../../features/reports/report-comparison';
 import { ReportDetail } from '../../../features/reports/report-detail';
-import { firstEmbeddedReport, toReportDetail } from '../../../features/reports/report-types';
+import { firstEmbeddedReport, formatReportCreatedAt, toReportDetail } from '../../../features/reports/report-types';
 import { createSupabaseServerClient } from '../../../lib/supabase/server-client';
 
 type ReportDetailPageProps = { params: Promise<{ id: string }> };
@@ -37,7 +37,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
   return (
     <AppShell title="验收报告">
       <main className="shell workspace-page report-workspace">
-        <header className="workspace-heading"><p className="eyebrow">验收工作区</p><h1>验收报告</h1><p>创建时间：{new Date(job.created_at).toLocaleString('zh-CN')}</p><p>需求：{job.request_text}</p></header>
+        <header className="workspace-heading"><p className="eyebrow">验收工作区</p><h1>验收报告</h1><p>创建时间：{formatReportCreatedAt(job.created_at)}</p><p>需求：{job.request_text}</p></header>
         <ReportDetail jobId={job.id} status={job.status} report={report} errorMessage={job.error_message} comparison={comparison} />
         <Link className="report-back-link" href="/reports">返回我的报告</Link>
       </main>
