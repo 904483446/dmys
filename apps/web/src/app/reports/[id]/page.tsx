@@ -5,7 +5,7 @@ import { AppShell } from '../../../components/app-shell';
 import { resolveProtectedRoute } from '../../../features/access/resolve-protected-route';
 import { compareReports } from '../../../features/reports/report-comparison';
 import { ReportDetail } from '../../../features/reports/report-detail';
-import { toReportDetail } from '../../../features/reports/report-types';
+import { firstEmbeddedReport, toReportDetail } from '../../../features/reports/report-types';
 import { createSupabaseServerClient } from '../../../lib/supabase/server-client';
 
 type ReportDetailPageProps = { params: Promise<{ id: string }> };
@@ -26,12 +26,12 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
     .eq('id', id)
     .maybeSingle();
   if (job === null) redirect('/reports');
-  const rawReport = job.verification_reports[0] ?? null;
+  const rawReport = firstEmbeddedReport(job.verification_reports);
   const report = rawReport === null ? null : toReportDetail(rawReport);
   const { data: previousJob } = report === null
     ? { data: null }
     : await supabase.from('verification_jobs').select('verification_reports(verdict, score, confidence, summary, verified_items, issues)').eq('project_id', job.project_id).lt('created_at', job.created_at).in('status', ['completed', 'failed']).order('created_at', { ascending: false }).limit(1).maybeSingle();
-  const previousRawReport = previousJob?.verification_reports[0] ?? null;
+  const previousRawReport = firstEmbeddedReport(previousJob?.verification_reports);
   const comparison = previousRawReport === null || report === null ? null : compareReports(toReportDetail(previousRawReport), report);
 
   return (

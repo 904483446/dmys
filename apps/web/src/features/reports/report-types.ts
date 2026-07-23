@@ -34,6 +34,11 @@ export type ReportDetail = {
   issues: z.infer<typeof issueSchema>[];
 };
 
+export function firstEmbeddedReport(input: unknown): unknown | null {
+  if (Array.isArray(input)) return input[0] ?? null;
+  return input ?? null;
+}
+
 export function toReportDetail(input: unknown): ReportDetail {
   const report = rawReportSchema.parse(input);
 

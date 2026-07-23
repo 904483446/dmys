@@ -1,11 +1,25 @@
 import { describe, expect, it } from 'vitest';
 
-import { toReportDetail } from './report-types.js';
+import * as reportTypes from './report-types.js';
+
+const firstEmbeddedReport = (reportTypes as Record<string, unknown>).firstEmbeddedReport as
+  | ((input: unknown) => unknown | null)
+  | undefined;
 
 describe('toReportDetail', () => {
+  it('returns null when a failed job has no embedded report', () => {
+    expect(firstEmbeddedReport).toBeTypeOf('function');
+    expect(firstEmbeddedReport?.(null)).toBeNull();
+  });
+
+  it('reads the first report from an embedded relation list', () => {
+    const report = { verdict: 'passed' };
+    expect(firstEmbeddedReport?.([report])).toBe(report);
+  });
+
   it('保留报告展示字段而丢弃私有来源字段', () => {
     expect(
-      toReportDetail({
+      reportTypes.toReportDetail({
         verdict: 'at_risk',
         score: 64,
         confidence: 70,
