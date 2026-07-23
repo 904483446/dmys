@@ -14,6 +14,18 @@ type WorkerSupabaseConfig = { url: string; serviceRoleKey: string; workerId: str
 type ClaimedJobRow = { id: string; source_snapshot: unknown; request_text: string };
 type ClaimedJob = { id: string; sourceSnapshot: unknown; request: string };
 
+function toWorkerRpcError(error: unknown): Error {
+  const code =
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string' &&
+    /^[A-Za-z0-9_]{1,32}$/.test(error.code)
+      ? error.code
+      : 'UNKNOWN';
+  return new Error(`WORKER_RPC_FAILED:${code}`);
+}
+
 export function readWorkerSupabaseConfig(
   environment: Record<string, string | undefined>,
 ): WorkerSupabaseConfig | null {
@@ -30,7 +42,7 @@ export function createWorkerRpcAdapter(client: RpcClient, workerId: string) {
       const response = await client.rpc<ClaimedJobRow>('claim_verification_job', {
         worker_id: workerId,
       });
-      if (response.error !== null) throw new Error('WORKER_RPC_FAILED');
+      if (response.error !== null) throw toWorkerRpcError(response.error);
       if (response.data === null) return null;
       return {
         id: response.data.id,
@@ -51,7 +63,8 @@ export function createWorkerRpcAdapter(client: RpcClient, workerId: string) {
         p_error_code: code,
         p_error_message: message,
       });
-      if (response.error !== null || response.data === null) throw new Error('WORKER_RPC_FAILED');
+      if (response.error !== null) throw toWorkerRpcError(response.error);
+      if (response.data === null) throw new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE');
     },
     async saveReport(jobId: string, report: ReturnType<typeof createDeterministicReport>) {
       const response = await client.rpc<ClaimedJob>('save_verification_report_for_worker', {
@@ -64,7 +77,8 @@ export function createWorkerRpcAdapter(client: RpcClient, workerId: string) {
         p_verified_items: report.verifiedItems,
         p_issues: report.issues,
       });
-      if (response.error !== null || response.data === null) throw new Error('WORKER_RPC_FAILED');
+      if (response.error !== null) throw toWorkerRpcError(response.error);
+      if (response.data === null) throw new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE');
     },
   };
 }

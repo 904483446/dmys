@@ -9,6 +9,16 @@ describe('readWorkerSupabaseConfig', () => {
 });
 
 describe('createWorkerRpcAdapter', () => {
+  it('claim RPC failure includes only a safe error code', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: '42501', message: 'permission denied for function claim_verification_job' },
+    });
+    const adapter = createWorkerRpcAdapter({ rpc }, 'worker-a');
+
+    await expect(adapter.claim()).rejects.toThrow('WORKER_RPC_FAILED:42501');
+  });
+
   it('仅通过受限 RPC 领取并更新持有的租约', async () => {
     const rpc = vi
       .fn()
