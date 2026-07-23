@@ -28,6 +28,7 @@ describe('prepareZipProject', () => {
         scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
       },
       projectDirectory: 'temporary-workspace',
+      packageManager: 'npm',
     });
     expect(extract).toHaveBeenCalledWith(
       join('temporary-workspace', 'source.zip'),
@@ -61,5 +62,24 @@ describe('prepareZipProject', () => {
     expect(readFile).toHaveBeenCalledWith(
       join('temporary-workspace', 'generated-root', 'package.json'),
     );
+  });
+  it('detects a pnpm lockfile beside package.json', async () => {
+    await expect(
+      prepareZipProject(
+        {
+          download: async () => Buffer.from('zip-content'),
+          writeFile: vi.fn().mockResolvedValue(undefined),
+          listEntries: async () => ['package.json', 'pnpm-lock.yaml'],
+          extract: vi.fn().mockResolvedValue(undefined),
+          readFile: async () =>
+            JSON.stringify({
+              dependencies: { vite: '^6.0.0' },
+              scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+            }),
+        },
+        'temporary-workspace',
+        'source.zip',
+      ),
+    ).resolves.toMatchObject({ packageManager: 'pnpm' });
   });
 });

@@ -34,10 +34,16 @@ export async function prepareZipProject(
   const directoryPrefix = packageJsonEntry.slice(0, -'package.json'.length).replace(/\/$/, '');
   const projectDirectory =
     directoryPrefix.length === 0 ? workspace : join(workspace, ...directoryPrefix.split('/'));
+  const packageManager = (await dependencies.listEntries(archivePath)).includes(
+    `${directoryPrefix.length === 0 ? '' : `${directoryPrefix}/`}pnpm-lock.yaml`,
+  )
+    ? 'pnpm'
+    : 'npm';
   return {
     packageJson: parsePackageJson(
       await dependencies.readFile(join(projectDirectory, 'package.json')),
     ),
     projectDirectory,
+    packageManager,
   };
 }

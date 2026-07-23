@@ -8,6 +8,7 @@ type NodeCommandRunnerDependencies = { execFile: ExecFile };
 
 const commandArguments: Record<string, string[]> = {
   'npm ci': ['ci'],
+  'pnpm install --frozen-lockfile': ['install', '--frozen-lockfile'],
   'npm run build': ['run', 'build'],
   'npm run dev': ['run', 'dev'],
   'npm run start': ['run', 'start'],
@@ -18,7 +19,7 @@ export function createNodeCommandRunner(dependencies: NodeCommandRunnerDependenc
     const arguments_ = commandArguments[command];
     if (arguments_ === undefined) throw new Error('UNSAFE_COMMAND');
     try {
-      const result = await dependencies.execFile('npm', arguments_, {
+      const result = await dependencies.execFile(command.startsWith('pnpm ') ? 'pnpm' : 'npm', arguments_, {
         cwd: workspace,
         timeout: 600_000,
         maxBuffer: 1_048_576,

@@ -3,6 +3,18 @@ import { describe, expect, it } from 'vitest';
 import { createProjectPlan, filterProjectFiles } from './project-plan.js';
 
 describe('createProjectPlan', () => {
+  it('uses frozen pnpm install when the uploaded project includes a pnpm lockfile', () => {
+    expect(
+      createProjectPlan(
+        {
+          dependencies: { vite: '^6.0.0' },
+          scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+        },
+        'pnpm',
+      ),
+    ).toMatchObject({ install: 'pnpm install --frozen-lockfile' });
+  });
+
   it('仅接受带白名单启动脚本的 Vite 项目', () => {
     expect(
       createProjectPlan({

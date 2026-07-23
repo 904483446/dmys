@@ -25,6 +25,7 @@ describe('createZipSourcePreparer', () => {
         scripts: { build: 'vite build', dev: 'vite' },
       },
       projectDirectory: 'temporary-workspace',
+      packageManager: 'npm',
     });
     expect(extract).toHaveBeenCalledTimes(1);
   });

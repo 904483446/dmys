@@ -3,6 +3,19 @@ import { describe, expect, it, vi } from 'vitest';
 import { createNodeCommandRunner } from './node-command-runner.js';
 
 describe('createNodeCommandRunner', () => {
+  it('runs a frozen pnpm install without a shell', async () => {
+    const execFile = vi.fn().mockResolvedValue({ stdout: 'ok', stderr: '' });
+    const run = createNodeCommandRunner({ execFile });
+
+    await expect(run('workspace', 'pnpm install --frozen-lockfile')).resolves.toEqual({ exitCode: 0, output: 'ok' });
+    expect(execFile).toHaveBeenCalledWith('pnpm', ['install', '--frozen-lockfile'], {
+      cwd: 'workspace',
+      timeout: 600_000,
+      maxBuffer: 1_048_576,
+      shell: false,
+    });
+  });
+
   it('以非 shell 方式运行白名单 npm 命令', async () => {
     const execFile = vi.fn().mockResolvedValue({ stdout: 'ok', stderr: '' });
     const run = createNodeCommandRunner({ execFile });

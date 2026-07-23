@@ -12,7 +12,7 @@ export type ProcessingDependencies = {
   prepareSource: (
     workspace: string,
     sourceSnapshot: unknown,
-  ) => Promise<{ packageJson: PackageJson; projectDirectory: string }>;
+  ) => Promise<{ packageJson: PackageJson; projectDirectory: string; packageManager?: 'npm' | 'pnpm' }>;
   run: (workspace: string, command: string) => Promise<{ exitCode: number; output: string }>;
   startProject: (
     workspace: string,
@@ -63,7 +63,7 @@ export async function processVerificationJob(
     { create: dependencies.createWorkspace, remove: dependencies.removeWorkspace },
     async (workspace) => {
       const source = await dependencies.prepareSource(workspace, job.sourceSnapshot);
-      const plan = createProjectPlan(source.packageJson);
+      const plan = createProjectPlan(source.packageJson, source.packageManager);
       if (plan === null) throw new Error('UNSUPPORTED_PROJECT');
 
       await dependencies.updateStatus(job.id, 'building');
