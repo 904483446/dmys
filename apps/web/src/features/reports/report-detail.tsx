@@ -1,4 +1,5 @@
 import { ReportActions } from './report-actions';
+import { ReportAutoRefresh } from './report-auto-refresh';
 import type { ReportComparison } from './report-comparison.js';
 import type { ReportDetail as Report } from './report-types.js';
 
@@ -10,6 +11,7 @@ export function ReportDetail({ jobId, status, report, errorMessage, comparison =
       <section className="demo report-pending" aria-live="polite">
         <strong>当前状态：{status}</strong>
         <span>{errorMessage ?? '报告正在准备。'}</span>
+        <ReportAutoRefresh jobId={jobId} status={status} />
         {(status === 'failed' || status === 'timed_out') && <button type="button">重新验收</button>}
       </section>
     );

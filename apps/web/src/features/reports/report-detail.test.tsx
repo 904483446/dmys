@@ -36,4 +36,10 @@ describe('ReportDetail', () => {
     expect(html).toContain('构建失败');
     expect(html).toContain('重新验收');
   });
+
+  it('在处理中提示用户页面会自动刷新', () => {
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="building" report={null} errorMessage={null} />);
+
+    expect(html).toContain('页面会自动刷新');
+  });
 });

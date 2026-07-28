@@ -28,6 +28,31 @@ describe('processVerificationJob', () => {
     ).rejects.toThrow('PROJECT_COMMAND_FAILED:PNPM_INSTALL');
   });
 
+  it('identifies a pnpm registry failure without exposing command output', async () => {
+    await expect(
+      processVerificationJob(
+        {
+          createWorkspace: async () => 'temporary-workspace',
+          removeWorkspace: vi.fn().mockResolvedValue(undefined),
+          prepareSource: async () => ({
+            projectDirectory: 'temporary-workspace',
+            packageManager: 'pnpm',
+            packageJson: {
+              dependencies: { vite: '^6.0.0' },
+              scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+            },
+          }),
+          run: async () => ({ exitCode: 1, output: 'ERR_PNPM_META_FETCH_FAIL https://registry.npmjs.org/pnpm' }),
+          startProject: async () => ({ stop: async () => undefined }),
+          collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: [] }),
+          saveReport: vi.fn().mockResolvedValue(undefined),
+          updateStatus: vi.fn().mockResolvedValue(undefined),
+        },
+        { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '验证首页' },
+      ),
+    ).rejects.toThrow('PROJECT_COMMAND_FAILED:PNPM_INSTALL:REGISTRY');
+  });
+
   it('将运行时的状态和报告回调组装到处理器', async () => {
     const updateStatus = vi.fn().mockResolvedValue(undefined);
     const saveReport = vi.fn().mockResolvedValue(undefined);
