@@ -2,7 +2,7 @@ FROM node:22-bookworm
 
 WORKDIR /app
 
-RUN corepack enable
+RUN corepack disable && npm install --global pnpm@11.7.0 && pnpm --version
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
