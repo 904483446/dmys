@@ -54,6 +54,8 @@ describe('ReportDetail', () => {
   it('在处理中提示用户页面会自动刷新', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="building" report={null} errorMessage={null} />);
 
+    expect(html).toContain('正在构建');
+    expect(html).not.toContain('>building<');
     expect(html).toContain('页面会自动刷新');
   });
 });

@@ -1,5 +1,6 @@
 import { ReportActions, RerunReportButton } from './report-actions';
 import { ReportAutoRefresh } from './report-auto-refresh';
+import { formatVerificationStatus } from '../jobs/format-verification-status';
 import type { ReportComparison } from './report-comparison.js';
 import type { ReportDetail as Report } from './report-types.js';
 
@@ -9,7 +10,7 @@ export function ReportDetail({ jobId, status, report, errorMessage, comparison =
   if (report === null)
     return (
       <section className="demo report-pending" aria-live="polite">
-        <strong>当前状态：{status}</strong>
+        <strong>当前状态：{formatVerificationStatus(status)}</strong>
         <span>{errorMessage ?? '报告正在准备。'}</span>
         <ReportAutoRefresh jobId={jobId} status={status} />
         {(status === 'failed' || status === 'timed_out') && <RerunReportButton jobId={jobId} />}

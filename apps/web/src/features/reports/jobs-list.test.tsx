@@ -10,7 +10,8 @@ describe('JobsList', () => {
     );
 
     expect(html).toContain('reports-table');
-    expect(html).toContain('completed');
+    expect(html).toContain('验收完成');
+    expect(html).not.toContain('>completed<');
     expect(html).toContain('href="/reports/job-1"');
     expect(html).toContain('查看验收结果');
   });
