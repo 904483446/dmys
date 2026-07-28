@@ -3,6 +3,31 @@ import { describe, expect, it, vi } from 'vitest';
 import { createWorkerJobProcessor, processVerificationJob } from './process-verification-job.js';
 
 describe('processVerificationJob', () => {
+  it('identifies the failed install command without exposing command output', async () => {
+    await expect(
+      processVerificationJob(
+        {
+          createWorkspace: async () => 'temporary-workspace',
+          removeWorkspace: vi.fn().mockResolvedValue(undefined),
+          prepareSource: async () => ({
+            projectDirectory: 'temporary-workspace',
+            packageManager: 'pnpm',
+            packageJson: {
+              dependencies: { vite: '^6.0.0' },
+              scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+            },
+          }),
+          run: async () => ({ exitCode: 1, output: 'private output must not be displayed' }),
+          startProject: async () => ({ stop: async () => undefined }),
+          collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: [] }),
+          saveReport: vi.fn().mockResolvedValue(undefined),
+          updateStatus: vi.fn().mockResolvedValue(undefined),
+        },
+        { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '验证首页' },
+      ),
+    ).rejects.toThrow('PROJECT_COMMAND_FAILED:PNPM_INSTALL');
+  });
+
   it('将运行时的状态和报告回调组装到处理器', async () => {
     const updateStatus = vi.fn().mockResolvedValue(undefined);
     const saveReport = vi.fn().mockResolvedValue(undefined);

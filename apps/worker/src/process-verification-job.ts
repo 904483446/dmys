@@ -6,6 +6,18 @@ import { withTemporaryWorkspace } from './temporary-workspace.js';
 type ClaimedJob = { id: string; sourceSnapshot: unknown; request: string };
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> };
 type VerificationReport = ReturnType<typeof createDeterministicReport>;
+
+function toProjectCommandFailure(command: string): Error {
+  const stage =
+    command === 'pnpm install --frozen-lockfile'
+      ? 'PNPM_INSTALL'
+      : command === 'npm ci'
+        ? 'NPM_INSTALL'
+        : command === 'npm run build'
+          ? 'BUILD'
+          : 'UNKNOWN';
+  return new Error(`PROJECT_COMMAND_FAILED:${stage}`);
+}
 export type ProcessingDependencies = {
   createWorkspace: () => Promise<string>;
   removeWorkspace: (path: string) => Promise<void>;
@@ -69,7 +81,7 @@ export async function processVerificationJob(
       await dependencies.updateStatus(job.id, 'building');
       for (const command of [plan.install, plan.build]) {
         const result = await dependencies.run(source.projectDirectory, command);
-        if (result.exitCode !== 0) throw new Error('PROJECT_COMMAND_FAILED');
+        if (result.exitCode !== 0) throw toProjectCommandFailure(command);
       }
 
       await dependencies.updateStatus(job.id, 'running');
