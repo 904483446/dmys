@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createZipJob } from '../../../../features/jobs/create-zip-job';
 import { listInstallationRepositories } from '../../../../features/github/github-app-client';
 import { inspectZipArchive } from '../../../../features/jobs/inspect-zip-archive';
+import { unwrapCreatedZipJobRpcResult } from '../../../../features/jobs/unwrap-created-zip-job-rpc-result';
 import { createSupabaseServerClient } from '../../../../lib/supabase/server-client';
 
 const requestSchema = z.object({
@@ -183,8 +184,7 @@ export async function POST(request: Request) {
         p_source_storage_path: source.sourceStoragePath,
         p_source_snapshot: metadata,
       });
-      if (error !== null || data === null) throw new Error('JOB_CREATE_FAILED');
-      return { id: data.id, status: data.status };
+      return unwrapCreatedZipJobRpcResult({ data, error });
     },
   });
   if (!result.ok)
