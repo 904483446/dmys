@@ -37,6 +37,20 @@ describe('ReportDetail', () => {
     expect(html).toContain('重新验收');
   });
 
+  it.each(['failed', 'timed_out'])('仅在无报告的 %s 状态展示重新验收按钮', (status) => {
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status={status} report={null} errorMessage={null} />);
+
+    expect(html).toContain('重新验收');
+  });
+
+  it('不在有报告或非失败状态展示重新验收按钮', () => {
+    const completedHtml = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
+    const buildingHtml = renderToStaticMarkup(<ReportDetail jobId="job-id" status="building" report={null} errorMessage={null} />);
+
+    expect(completedHtml).not.toContain('重新验收');
+    expect(buildingHtml).not.toContain('重新验收');
+  });
+
   it('在处理中提示用户页面会自动刷新', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="building" report={null} errorMessage={null} />);
 
