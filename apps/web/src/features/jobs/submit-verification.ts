@@ -1,11 +1,12 @@
 type Upload = { path: string; token: string };
 type Job = { id: string; status: string };
+type RequestError = { code?: string; message?: string };
 
 type SubmitVerificationInput = {
   requestText: string;
   zip: File;
   prd?: File;
-  request: (path: string, body: unknown) => Promise<{ upload?: Upload; job?: Job }>;
+  request: (path: string, body: unknown) => Promise<{ upload?: Upload; job?: Job; error?: RequestError }>;
   upload: (path: string, token: string, file: File) => Promise<{ error: unknown }>;
 };
 
@@ -42,6 +43,10 @@ export async function submitVerification(input: SubmitVerificationInput) {
     source: { type: 'zip', sourceStoragePath: signed.upload.path },
     ...(prdStoragePath === undefined ? {} : { prdStoragePath }),
   });
-  if (created.job === undefined) return { ok: false as const, message: '暂时无法创建验收任务' };
+  if (created.job === undefined)
+    return {
+      ok: false as const,
+      message: created.error?.message ?? '暂时无法创建验收任务',
+    };
   return { ok: true as const, job: created.job };
 }

@@ -41,4 +41,20 @@ describe('submitVerification', () => {
       prdStoragePath: 'user/brief.md',
     });
   });
+
+  it('展示创建接口返回的安全错误提示', async () => {
+    const result = await submitVerification({
+      requestText: '验证首页',
+      zip: new File(['zip'], 'site.zip', { type: 'application/zip' }),
+      request: vi
+        .fn()
+        .mockResolvedValueOnce({ upload: { path: 'user/source.zip', token: 'zip-signature' } })
+        .mockResolvedValueOnce({
+          error: { code: 'DAILY_JOB_LIMIT_EXCEEDED', message: '今日验收次数已达上限' },
+        }),
+      upload: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    expect(result).toEqual({ ok: false, message: '今日验收次数已达上限' });
+  });
 });
