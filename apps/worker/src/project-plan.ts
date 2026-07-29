@@ -1,7 +1,7 @@
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string>; packageManager?: string };
 type ProjectPlan = {
   framework: 'vite' | 'next';
-  install: 'npm ci' | 'pnpm install --frozen-lockfile --prefer-offline';
+  install: 'npm ci' | 'pnpm install --frozen-lockfile --prefer-offline --ignore-scripts';
   build: 'npm run build';
   start: 'npm run dev' | 'npm run start';
   localUrl: string;
@@ -9,7 +9,9 @@ type ProjectPlan = {
 
 export function createProjectPlan(packageJson: PackageJson, packageManager = packageJson.packageManager): ProjectPlan | null {
   const scripts = packageJson.scripts ?? {};
-  const install = packageManager?.startsWith('pnpm') ? 'pnpm install --frozen-lockfile --prefer-offline' : 'npm ci';
+  const install = packageManager?.startsWith('pnpm')
+    ? 'pnpm install --frozen-lockfile --prefer-offline --ignore-scripts'
+    : 'npm ci';
   if (
     packageJson.dependencies?.vite !== undefined &&
     scripts.build === 'vite build' &&

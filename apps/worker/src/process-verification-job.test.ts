@@ -107,8 +107,8 @@ describe('processVerificationJob', () => {
     );
 
     expect(run.mock.calls.map((call) => call[1])).toEqual([
-      'pnpm install --frozen-lockfile --prefer-offline',
-      'pnpm install --frozen-lockfile --prefer-offline',
+      'pnpm install --frozen-lockfile --prefer-offline --ignore-scripts',
+      'pnpm install --frozen-lockfile --prefer-offline --ignore-scripts',
       'npm run build',
     ]);
   });

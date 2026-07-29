@@ -10,6 +10,12 @@ const commandArguments: Record<string, string[]> = {
   'npm ci': ['ci'],
   'pnpm install --frozen-lockfile': ['install', '--frozen-lockfile'],
   'pnpm install --frozen-lockfile --prefer-offline': ['install', '--frozen-lockfile', '--prefer-offline'],
+  'pnpm install --frozen-lockfile --prefer-offline --ignore-scripts': [
+    'install',
+    '--frozen-lockfile',
+    '--prefer-offline',
+    '--ignore-scripts',
+  ],
   'npm run build': ['run', 'build'],
   'npm run dev': ['run', 'dev'],
   'npm run start': ['run', 'start'],

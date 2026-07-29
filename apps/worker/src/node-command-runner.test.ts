@@ -32,6 +32,19 @@ describe('createNodeCommandRunner', () => {
     });
   });
 
+  it('does not execute dependency lifecycle scripts during pnpm install', async () => {
+    const execFile = vi.fn().mockResolvedValue({ stdout: 'ok', stderr: '' });
+    const run = createNodeCommandRunner({ execFile });
+
+    await run('workspace', 'pnpm install --frozen-lockfile --prefer-offline --ignore-scripts');
+
+    expect(execFile).toHaveBeenCalledWith(
+      'pnpm',
+      ['install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts'],
+      expect.any(Object),
+    );
+  });
+
   it('以非 shell 方式运行白名单 npm 命令', async () => {
     const execFile = vi.fn().mockResolvedValue({ stdout: 'ok', stderr: '' });
     const run = createNodeCommandRunner({ execFile });
