@@ -28,6 +28,21 @@ describe('runWorkerOnce', () => {
     expect(log).toHaveBeenCalledWith({ event: 'verification_job_failed', code: 'WORKER_PROCESS_FAILED' });
   });
 
+  it('失败状态无法回写时记录独立的安全错误码', async () => {
+    const log = vi.fn();
+    const update = vi.fn().mockRejectedValue(new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE'));
+
+    await expect(
+      runWorkerOnce({
+        claim: async () => ({ id: 'job-id', sourceSnapshot: {} }),
+        process: async () => { throw new Error('UNSUPPORTED_PROJECT'); },
+        update,
+        log,
+      }),
+    ).resolves.toEqual({ status: 'failed', jobId: 'job-id' });
+    expect(log).toHaveBeenCalledWith({ event: 'verification_job_failure_persist_failed', code: 'WORKER_RPC_FAILED:EMPTY_RESPONSE' });
+  });
+
   it('writes completed status after successful processing', async () => {
     const update = vi.fn().mockResolvedValue(undefined);
     const result = await runWorkerOnce({

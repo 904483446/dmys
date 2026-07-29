@@ -57,6 +57,19 @@ describe('ReportActions', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('重新验收被接口拒绝时保留安全的失败原因', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: { message: '今日验收次数已达上限' } }),
+    });
+    const navigate = vi.fn();
+    const onFailure = vi.fn();
+
+    await expect(rerunVerificationJob('old-job-id', fetchImpl, navigate, onFailure)).resolves.toBe(false);
+    expect(onFailure).toHaveBeenCalledWith('今日验收次数已达上限');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('并发重新验收只执行一次请求，并在结束后允许再次执行', async () => {
     let finishRequest!: () => void;
     const request = vi

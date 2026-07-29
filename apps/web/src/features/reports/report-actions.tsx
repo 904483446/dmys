@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 
 type Props = { jobId: string; repairPrompt: string };
-type RerunResponse = { job?: { id: string } };
+type RerunResponse = { job?: { id: string }; error?: { message?: string } };
 type Fetcher = (input: string, init: { method: string; body: string }) => Promise<{ ok: boolean; json: () => Promise<RerunResponse> }>;
 
 export function createSingleFlight<T>(operation: () => Promise<T>, onRunningChange?: (isRunning: boolean) => void) {
@@ -25,15 +25,24 @@ export function createSingleFlight<T>(operation: () => Promise<T>, onRunningChan
   };
 }
 
-export async function rerunVerificationJob(jobId: string, fetchImpl: Fetcher, navigate: (url: string) => void) {
+export async function rerunVerificationJob(
+  jobId: string,
+  fetchImpl: Fetcher,
+  navigate: (url: string) => void,
+  onFailure?: (message: string) => void,
+) {
   try {
     const response = await fetchImpl(`/api/v1/verification-jobs/${jobId}/rerun`, { method: 'POST', body: '{}' });
     const body = await response.json();
     const newJobId = body.job?.id;
-    if (!response.ok || typeof newJobId !== 'string' || newJobId.trim().length === 0) return false;
+    if (!response.ok || typeof newJobId !== 'string' || newJobId.trim().length === 0) {
+      onFailure?.(body.error?.message ?? '重新验收失败，请稍后重试');
+      return false;
+    }
     navigate(`/reports/${newJobId}`);
     return true;
   } catch {
+    onFailure?.('重新验收失败，请稍后重试');
     return false;
   }
 }
@@ -42,11 +51,10 @@ export function createRerunOperation(
   getJobId: () => string,
   fetchImpl: Fetcher,
   navigate: (url: string) => void,
-  onFailure?: () => void,
+  onFailure?: (message: string) => void,
 ) {
   return async () => {
-    const succeeded = await rerunVerificationJob(getJobId(), fetchImpl, navigate);
-    if (!succeeded) onFailure?.();
+    await rerunVerificationJob(getJobId(), fetchImpl, navigate, onFailure);
   };
 }
 
@@ -62,7 +70,7 @@ export function RerunReportButton({ jobId }: { jobId: string }) {
         () => latestJobId.current,
         fetch,
         (url) => window.location.assign(url),
-        () => setMessage('重新验收失败，请稍后重试'),
+        setMessage,
       ),
       setIsRerunning,
     );
