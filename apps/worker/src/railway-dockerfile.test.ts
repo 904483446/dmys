@@ -9,6 +9,9 @@ describe('Railway Dockerfile', () => {
 
     expect(dockerfile).toContain('node:22');
     expect(dockerfile).toContain('pnpm install --frozen-lockfile');
+    expect(dockerfile).toContain('vibeverify-task-list-cache');
+    expect(dockerfile).toContain('COPY apps/worker/fixtures/task-list-cache/pnpm-lock.yaml /opt/vibeverify-task-list-cache/pnpm-lock.yaml');
+    expect(dockerfile).toContain('pnpm fetch --dir /opt/vibeverify-task-list-cache --prod');
     expect(dockerfile).toContain('playwright install --with-deps chromium');
     expect(workerPackage).toContain('"start": "tsx src/main.ts"');
   });

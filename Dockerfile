@@ -12,6 +12,10 @@ COPY packages/prompting/package.json packages/prompting/package.json
 
 RUN pnpm install --frozen-lockfile
 
+COPY apps/worker/fixtures/task-list-cache/package.json /opt/vibeverify-task-list-cache/package.json
+COPY apps/worker/fixtures/task-list-cache/pnpm-lock.yaml /opt/vibeverify-task-list-cache/pnpm-lock.yaml
+RUN pnpm fetch --dir /opt/vibeverify-task-list-cache --prod
+
 COPY . .
 
 RUN pnpm --filter @vibeverify/worker exec playwright install --with-deps chromium

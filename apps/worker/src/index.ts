@@ -52,6 +52,7 @@ export function createWorkerRuntime(dependencies: WorkerRuntimeDependencies) {
     runOnce: () =>
       runWorkerOnce({
         ...adapter,
+        log: (entry) => console.error(JSON.stringify(entry)),
         process: (job) =>
           dependencies.process(
             job,

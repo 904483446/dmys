@@ -7,18 +7,23 @@ type ClaimedJob = { id: string; sourceSnapshot: unknown; request: string };
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> };
 type VerificationReport = ReturnType<typeof createDeterministicReport>;
 
+function pnpmInstallFailureCode(command: string, output: string) {
+  if (!command.startsWith('pnpm install --frozen-lockfile')) return null;
+  if (output.includes('ERR_PNPM_META_FETCH_FAIL') || output.includes('registry.npmjs.org'))
+    return 'REGISTRY';
+  const pnpmCode = output.match(/ERR_PNPM_([A-Z_]{1,64})/);
+  return pnpmCode?.[1] ?? null;
+}
+
 function isPnpmRegistryFailure(command: string, output: string) {
-  return (
-    command === 'pnpm install --frozen-lockfile' &&
-    (output.includes('ERR_PNPM_META_FETCH_FAIL') || output.includes('registry.npmjs.org'))
-  );
+  return pnpmInstallFailureCode(command, output) === 'REGISTRY';
 }
 
 function toProjectCommandFailure(command: string, output: string): Error {
-  if (isPnpmRegistryFailure(command, output))
-    return new Error('PROJECT_COMMAND_FAILED:PNPM_INSTALL:REGISTRY');
+  const pnpmFailure = pnpmInstallFailureCode(command, output);
+  if (pnpmFailure !== null) return new Error(`PROJECT_COMMAND_FAILED:PNPM_INSTALL:${pnpmFailure}`);
   const stage =
-    command === 'pnpm install --frozen-lockfile'
+    command.startsWith('pnpm install --frozen-lockfile')
       ? 'PNPM_INSTALL'
       : command === 'npm ci'
         ? 'NPM_INSTALL'

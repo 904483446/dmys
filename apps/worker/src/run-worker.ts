@@ -2,6 +2,7 @@ type ClaimedJob = { id: string; sourceSnapshot: unknown };
 type WorkerDependencies = {
   claim: () => Promise<ClaimedJob | null>;
   process: (job: ClaimedJob) => Promise<void>;
+  log?: (entry: { event: 'verification_job_failed'; code: string }) => void;
   update: (
     jobId: string,
     status: 'completed' | 'failed',
@@ -9,6 +10,12 @@ type WorkerDependencies = {
     message: string | null,
   ) => Promise<void>;
 };
+
+function toSafeFailureCode(message: string) {
+  return /^PROJECT_COMMAND_FAILED(?::[A-Z_]{1,64}){1,3}$/.test(message)
+    ? message
+    : 'WORKER_PROCESS_FAILED';
+}
 
 export async function runWorkerOnce(dependencies: WorkerDependencies) {
   const job = await dependencies.claim();
@@ -20,6 +27,7 @@ export async function runWorkerOnce(dependencies: WorkerDependencies) {
     return { status: 'processed' as const, jobId: job.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Worker 处理失败';
+    dependencies.log?.({ event: 'verification_job_failed', code: toSafeFailureCode(message) });
     await dependencies.update(job.id, 'failed', 'WORKER_PROCESS_FAILED', message);
     return { status: 'failed' as const, jobId: job.id };
   }

@@ -16,6 +16,22 @@ describe('createNodeCommandRunner', () => {
     });
   });
 
+  it('prefers the local pnpm store for a frozen install', async () => {
+    const execFile = vi.fn().mockResolvedValue({ stdout: 'ok', stderr: '' });
+    const run = createNodeCommandRunner({ execFile });
+
+    await expect(run('workspace', 'pnpm install --frozen-lockfile --prefer-offline')).resolves.toEqual({
+      exitCode: 0,
+      output: 'ok',
+    });
+    expect(execFile).toHaveBeenCalledWith('pnpm', ['install', '--frozen-lockfile', '--prefer-offline'], {
+      cwd: 'workspace',
+      timeout: 600_000,
+      maxBuffer: 1_048_576,
+      shell: false,
+    });
+  });
+
   it('以非 shell 方式运行白名单 npm 命令', async () => {
     const execFile = vi.fn().mockResolvedValue({ stdout: 'ok', stderr: '' });
     const run = createNodeCommandRunner({ execFile });

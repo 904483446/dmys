@@ -53,6 +53,31 @@ describe('processVerificationJob', () => {
     ).rejects.toThrow('PROJECT_COMMAND_FAILED:PNPM_INSTALL:REGISTRY');
   });
 
+  it('reports a pnpm lockfile mismatch with a safe diagnostic code', async () => {
+    await expect(
+      processVerificationJob(
+        {
+          createWorkspace: async () => 'temporary-workspace',
+          removeWorkspace: vi.fn().mockResolvedValue(undefined),
+          prepareSource: async () => ({
+            projectDirectory: 'temporary-workspace',
+            packageManager: 'pnpm',
+            packageJson: {
+              dependencies: { vite: '^6.0.0' },
+              scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+            },
+          }),
+          run: async () => ({ exitCode: 1, output: 'ERR_PNPM_OUTDATED_LOCKFILE Cannot install with frozen lockfile' }),
+          startProject: async () => ({ stop: async () => undefined }),
+          collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: [] }),
+          saveReport: vi.fn().mockResolvedValue(undefined),
+          updateStatus: vi.fn().mockResolvedValue(undefined),
+        },
+        { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '验证首页' },
+      ),
+    ).rejects.toThrow('PROJECT_COMMAND_FAILED:PNPM_INSTALL:OUTDATED_LOCKFILE');
+  });
+
   it('retries one transient pnpm registry failure before building the project', async () => {
     const run = vi
       .fn()
@@ -82,8 +107,8 @@ describe('processVerificationJob', () => {
     );
 
     expect(run.mock.calls.map((call) => call[1])).toEqual([
-      'pnpm install --frozen-lockfile',
-      'pnpm install --frozen-lockfile',
+      'pnpm install --frozen-lockfile --prefer-offline',
+      'pnpm install --frozen-lockfile --prefer-offline',
       'npm run build',
     ]);
   });

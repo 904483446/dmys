@@ -12,7 +12,7 @@ describe('createProjectPlan', () => {
         },
         'pnpm',
       ),
-    ).toMatchObject({ install: 'pnpm install --frozen-lockfile' });
+    ).toMatchObject({ install: 'pnpm install --frozen-lockfile --prefer-offline' });
   });
 
   it('仅接受带白名单启动脚本的 Vite 项目', () => {

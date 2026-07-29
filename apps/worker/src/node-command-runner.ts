@@ -9,6 +9,7 @@ type NodeCommandRunnerDependencies = { execFile: ExecFile };
 const commandArguments: Record<string, string[]> = {
   'npm ci': ['ci'],
   'pnpm install --frozen-lockfile': ['install', '--frozen-lockfile'],
+  'pnpm install --frozen-lockfile --prefer-offline': ['install', '--frozen-lockfile', '--prefer-offline'],
   'npm run build': ['run', 'build'],
   'npm run dev': ['run', 'dev'],
   'npm run start': ['run', 'start'],
