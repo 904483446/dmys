@@ -7,11 +7,15 @@ type ClaimedJob = { id: string; sourceSnapshot: unknown; request: string };
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> };
 type VerificationReport = ReturnType<typeof createDeterministicReport>;
 
-function toProjectCommandFailure(command: string, output: string): Error {
-  if (
+function isPnpmRegistryFailure(command: string, output: string) {
+  return (
     command === 'pnpm install --frozen-lockfile' &&
     (output.includes('ERR_PNPM_META_FETCH_FAIL') || output.includes('registry.npmjs.org'))
-  )
+  );
+}
+
+function toProjectCommandFailure(command: string, output: string): Error {
+  if (isPnpmRegistryFailure(command, output))
     return new Error('PROJECT_COMMAND_FAILED:PNPM_INSTALL:REGISTRY');
   const stage =
     command === 'pnpm install --frozen-lockfile'
@@ -85,8 +89,12 @@ export async function processVerificationJob(
 
       await dependencies.updateStatus(job.id, 'building');
       for (const command of [plan.install, plan.build]) {
-        const result = await dependencies.run(source.projectDirectory, command);
-        if (result.exitCode !== 0) throw toProjectCommandFailure(command, result.output);
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          const result = await dependencies.run(source.projectDirectory, command);
+          if (result.exitCode === 0) break;
+          if (attempt === 0 && isPnpmRegistryFailure(command, result.output)) continue;
+          throw toProjectCommandFailure(command, result.output);
+        }
       }
 
       await dependencies.updateStatus(job.id, 'running');
