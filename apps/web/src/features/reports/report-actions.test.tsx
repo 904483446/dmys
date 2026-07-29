@@ -1,9 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createRerunOperation, createSingleFlight, ReportActions, rerunVerificationJob } from './report-actions.js';
+import { createRerunOperation, createSingleFlight, isRerunQuotaLimited, ReportActions, rerunVerificationJob } from './report-actions.js';
 
 describe('ReportActions', () => {
+  it('每日额度已满时禁止再次发起重新验收', () => {
+    expect(isRerunQuotaLimited('今日验收次数已达上限')).toBe(true);
+    expect(isRerunQuotaLimited('重新验收失败，请稍后重试')).toBe(false);
+  });
   it('为完成报告提供可访问的导出和复制操作', () => {
     const html = renderToStaticMarkup(<ReportActions jobId="job-id" repairPrompt="修复保存逻辑" />);
     expect(html).toContain('复制修复提示词');

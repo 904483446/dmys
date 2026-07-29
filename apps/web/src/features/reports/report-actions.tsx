@@ -6,6 +6,10 @@ type Props = { jobId: string; repairPrompt: string };
 type RerunResponse = { job?: { id: string }; error?: { message?: string } };
 type Fetcher = (input: string, init: { method: string; body: string }) => Promise<{ ok: boolean; json: () => Promise<RerunResponse> }>;
 
+export function isRerunQuotaLimited(message: string) {
+  return message === '今日验收次数已达上限';
+}
+
 export function createSingleFlight<T>(operation: () => Promise<T>, onRunningChange?: (isRunning: boolean) => void) {
   let inFlight: Promise<T> | null = null;
 
@@ -75,7 +79,7 @@ export function RerunReportButton({ jobId }: { jobId: string }) {
       setIsRerunning,
     );
 
-  return <><button type="button" disabled={isRerunning} aria-busy={isRerunning} onClick={() => void rerunGuard.current?.run()}>重新验收</button><span aria-live="polite">{message}</span></>;
+  return <><button type="button" disabled={isRerunning || isRerunQuotaLimited(message)} aria-busy={isRerunning} onClick={() => void rerunGuard.current?.run()}>重新验收</button><span aria-live="polite">{message}</span></>;
 }
 
 export function ReportActions({ jobId, repairPrompt }: Props) {
