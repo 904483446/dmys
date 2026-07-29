@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { formatVerificationStatus } from '../jobs/format-verification-status';
 import { shouldPollJobs } from '../jobs/should-poll-jobs';
+import { formatReportCreatedAt } from './report-types';
 
 type Job = { id: string; status: string; createdAt: string };
 type JobsListProps = { initialJobs: Job[] };
@@ -41,7 +42,7 @@ export function JobsList({ initialJobs }: JobsListProps) {
         <Link className="report-row" key={job.id} href={`/reports/${job.id}`}>
           <span className="report-status">{formatVerificationStatus(job.status)}</span>
           <strong>查看验收结果</strong>
-          <span>{new Date(job.createdAt).toLocaleString('zh-CN')}</span>
+          <span>{formatReportCreatedAt(job.createdAt)}</span>
         </Link>
       ))}
     </section>

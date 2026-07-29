@@ -8,6 +8,7 @@ type WorkerLoopDependencies = {
 export async function runWorkerLoop(dependencies: WorkerLoopDependencies) {
   while (dependencies.shouldContinue()) {
     const result = await dependencies.runOnce();
-    if (result.status === 'idle') await dependencies.sleep(dependencies.idleDelayMs);
+    if (result.status === 'idle' || result.status === 'failed')
+      await dependencies.sleep(dependencies.idleDelayMs);
   }
 }
