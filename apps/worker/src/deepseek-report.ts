@@ -8,34 +8,96 @@ type DeepSeekDependencies = {
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
 };
 
-function normalizeModelReport(content: string): unknown {
-  const json = content.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  const report = JSON.parse(json);
-  if (report === null || typeof report !== 'object' || Array.isArray(report)) return report;
+function recordOf(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
 
-  const value = report as Record<string, unknown>;
+function firstValue(record: Record<string, unknown>, keys: string[]) {
+  return keys.map((key) => record[key]).find((value) => value !== undefined);
+}
+
+function jsonObjectFrom(content: string) {
+  const trimmed = content.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  const start = trimmed.indexOf('{');
+  if (start === -1) return trimmed;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < trimmed.length; index += 1) {
+    const character = trimmed[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '"') inString = false;
+      continue;
+    }
+    if (character === '"') inString = true;
+    else if (character === '{') depth += 1;
+    else if (character === '}') {
+      depth -= 1;
+      if (depth === 0) return trimmed.slice(start, index + 1);
+    }
+  }
+  return trimmed;
+}
+
+function asEvidenceIds(value: unknown) {
+  if (typeof value === 'string') return [value];
+  return value;
+}
+
+function asScore(value: unknown) {
+  if (typeof value !== 'string') return value;
+  const match = value.match(/\d+(?:\.\d+)?/);
+  return match === null ? value : Number(match[0]);
+}
+
+function normalizeModelReport(content: string): unknown {
+  const report = JSON.parse(jsonObjectFrom(content));
+  const value = recordOf(report);
+  if (value === null) return report;
+
+  const normalizeVerdict = (input: unknown) =>
+    ({ '通过': 'passed', '有风险': 'at_risk', '未通过': 'failed', '失败': 'failed' }[String(input)] ?? input);
+  const normalizeStatus = (input: unknown) =>
+    ({ '已验证': 'verified', '未验证': 'not_verified' }[String(input)] ?? input);
+  const normalizeSeverity = (input: unknown) =>
+    ({ '严重': 'critical', '重要': 'major', '轻微': 'minor' }[String(input)] ?? input);
   const normalizeItem = (item: unknown) => {
-    if (item === null || typeof item !== 'object' || Array.isArray(item)) return item;
-    const record = item as Record<string, unknown>;
-    return { ...record, evidenceIds: record.evidenceIds ?? record.evidence_ids };
+    const record = recordOf(item);
+    if (record === null) return item;
+    return {
+      ...record,
+      title: firstValue(record, ['title', 'name', '名称']),
+      status: normalizeStatus(firstValue(record, ['status', '状态'])),
+      evidenceIds: asEvidenceIds(firstValue(record, ['evidenceIds', 'evidence_ids', 'evidenceId', 'evidence_id', '证据'])) ,
+    };
   };
+  const normalizeIssue = (issue: unknown) => {
+    const record = recordOf(issue);
+    if (record === null) return issue;
+    return {
+      ...record,
+      severity: normalizeSeverity(firstValue(record, ['severity', '严重程度'])),
+      title: firstValue(record, ['title', 'name', '名称']),
+      description: firstValue(record, ['description', 'detail', '说明', '描述']),
+      evidenceIds: asEvidenceIds(firstValue(record, ['evidenceIds', 'evidence_ids', 'evidenceId', 'evidence_id', '证据'])),
+      repairPrompt: firstValue(record, ['repairPrompt', 'repair_prompt', 'fixPrompt', 'fix_prompt', 'repairSuggestion', '修复提示词']),
+    };
+  };
+  const verifiedItems = firstValue(value, ['verifiedItems', 'verified_items', 'verifiedFeatures', 'verified_features', '已验证功能']);
+  const issues = firstValue(value, ['issues', 'problems', '问题']);
 
   return {
     ...value,
-    verifiedItems: Array.isArray(value.verifiedItems ?? value.verified_items)
-      ? (value.verifiedItems ?? value.verified_items as unknown[]).map(normalizeItem)
-      : value.verifiedItems ?? value.verified_items,
-    issues: Array.isArray(value.issues)
-      ? value.issues.map((issue) => {
-          if (issue === null || typeof issue !== 'object' || Array.isArray(issue)) return issue;
-          const record = issue as Record<string, unknown>;
-          return {
-            ...record,
-            evidenceIds: record.evidenceIds ?? record.evidence_ids,
-            repairPrompt: record.repairPrompt ?? record.repair_prompt,
-          };
-        })
-      : value.issues,
+    verdict: normalizeVerdict(firstValue(value, ['verdict', '结论'])),
+    score: asScore(firstValue(value, ['score', '评分'])),
+    confidence: asScore(firstValue(value, ['confidence', '可信度'])),
+    summary: firstValue(value, ['summary', '结论摘要', '摘要']),
+    verifiedItems: Array.isArray(verifiedItems) ? verifiedItems.map(normalizeItem) : verifiedItems,
+    issues: Array.isArray(issues) ? issues.map(normalizeIssue) : issues,
   };
 }
 

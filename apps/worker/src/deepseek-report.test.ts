@@ -93,4 +93,41 @@ describe('createDeepSeekReportGenerator', () => {
     expect(request.messages[0].content).toContain('verifiedItems');
     expect(request.messages[0].content).toContain('repairPrompt');
   });
+
+  it('normalizes common Chinese report aliases without replacing model-generated repair guidance', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content:
+                  '验收报告如下：\n{"verdict":"有风险","score":"50/100","confidence":"40 分","summary":"发现保存问题","已验证功能":[{"name":"首页","status":"已验证","evidence_id":"homepage-status"}],"问题":[{"severity":"重要","name":"保存失败","detail":"提交后未更新","evidence_id":"homepage-status","fix_prompt":"修复保存逻辑"}]}\n请查收。',
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+    const generate = createDeepSeekReportGenerator({ apiKey: 'test-key', model: 'deepseek-chat', fetch });
+
+    await expect(
+      generate({ request: '验证首页', evidenceIds: ['homepage-status'], homepageReachable: true }),
+    ).resolves.toMatchObject({
+      verdict: 'at_risk',
+      score: 50,
+      confidence: 40,
+      verifiedItems: [{ title: '首页', status: 'verified', evidenceIds: ['homepage-status'] }],
+      issues: [
+        {
+          severity: 'major',
+          title: '保存失败',
+          description: '提交后未更新',
+          evidenceIds: ['homepage-status'],
+          repairPrompt: '修复保存逻辑',
+        },
+      ],
+    });
+  });
 });
