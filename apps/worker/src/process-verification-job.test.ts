@@ -2,8 +2,17 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createWorkerJobProcessor, processVerificationJob } from './process-verification-job.js';
 
+const successfulReport = async () => ({
+  verdict: 'at_risk' as const,
+  score: 50,
+  confidence: 40,
+  summary: '模型报告',
+  verifiedItems: [{ title: '首页可访问', evidenceIds: ['homepage-status'], status: 'verified' as const }],
+  issues: [{ severity: 'major' as const, title: '保存失败', description: '提交后未更新', evidenceIds: ['homepage-status'], repairPrompt: '修复保存逻辑' }],
+});
+
 describe('processVerificationJob', () => {
-  it('falls back to a deterministic report when the report model boundary throws', async () => {
+  it('fails without saving a report when no report model is configured', async () => {
     const saveReport = vi.fn().mockResolvedValue(undefined);
 
     await expect(
@@ -21,18 +30,43 @@ describe('processVerificationJob', () => {
           run: async () => ({ exitCode: 0, output: 'ok' }),
           startProject: async () => ({ stop: async () => undefined }),
           collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: ['homepage-status'] }),
-          generateReport: async () => { throw new Error('REPORT_MODEL_UNAVAILABLE'); },
           saveReport,
           updateStatus: vi.fn().mockResolvedValue(undefined),
         },
         { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '验证首页' },
       ),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow('REPORT_MODEL_FAILED:CONFIG');
 
-    expect(saveReport).toHaveBeenCalledWith(
-      'job-id',
-      expect.objectContaining({ verdict: 'at_risk', verifiedItems: expect.any(Array) }),
-    );
+    expect(saveReport).not.toHaveBeenCalled();
+  });
+
+  it('does not save a report when the report model boundary throws', async () => {
+    const saveReport = vi.fn().mockResolvedValue(undefined);
+
+    await expect(
+      processVerificationJob(
+        {
+          createWorkspace: async () => 'temporary-workspace',
+          removeWorkspace: vi.fn().mockResolvedValue(undefined),
+          prepareSource: async () => ({
+            projectDirectory: 'temporary-workspace',
+            packageJson: {
+              dependencies: { vite: '^6.0.0' },
+              scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+            },
+          }),
+          run: async () => ({ exitCode: 0, output: 'ok' }),
+          startProject: async () => ({ stop: async () => undefined }),
+          collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: ['homepage-status'] }),
+          generateReport: async () => { throw new Error('REPORT_MODEL_FAILED:NETWORK'); },
+          saveReport,
+          updateStatus: vi.fn().mockResolvedValue(undefined),
+        },
+        { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '验证首页' },
+      ),
+    ).rejects.toThrow('REPORT_MODEL_FAILED:NETWORK');
+
+    expect(saveReport).not.toHaveBeenCalled();
   });
 
   it('identifies the failed install command without exposing command output', async () => {
@@ -132,6 +166,7 @@ describe('processVerificationJob', () => {
         run,
         startProject: async () => ({ stop: async () => undefined }),
         collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: [] }),
+        generateReport: successfulReport,
         saveReport: vi.fn().mockResolvedValue(undefined),
         updateStatus: vi.fn().mockResolvedValue(undefined),
       },
@@ -164,6 +199,7 @@ describe('processVerificationJob', () => {
         homepageReachable: true,
         evidenceIds: ['homepage-status'],
       }),
+      generateReport: successfulReport,
     });
 
     await process(
@@ -203,6 +239,7 @@ describe('processVerificationJob', () => {
           homepageReachable: true,
           evidenceIds: ['homepage-status'],
         }),
+        generateReport: successfulReport,
         saveReport,
         updateStatus,
       },
@@ -253,6 +290,7 @@ describe('processVerificationJob', () => {
           homepageReachable: true,
           evidenceIds: ['homepage-status'],
         }),
+        generateReport: successfulReport,
         saveReport: vi.fn().mockResolvedValue(undefined),
         updateStatus: vi.fn().mockResolvedValue(undefined),
       },

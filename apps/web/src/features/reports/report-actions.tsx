@@ -96,5 +96,5 @@ export function ReportActions({ jobId, repairPrompt }: Props) {
     link.href = url; link.download = `vibeverify-report.${format === 'markdown' ? 'md' : 'pdf'}`; link.click(); URL.revokeObjectURL(url);
     setMessage('导出已开始');
   };
-  return <div><button type="button" onClick={() => void copy()}>复制修复提示词</button><button type="button" onClick={() => void download('markdown')}>导出 Markdown</button><button type="button" onClick={() => void download('pdf')}>导出 PDF</button><span aria-live="polite">{message}</span></div>;
+  return <div className="report-actions"><button className="report-action-primary" type="button" onClick={() => void copy()}>复制修复提示词</button><button className="report-action-secondary" type="button" onClick={() => void download('markdown')}>导出 Markdown</button><button className="report-action-secondary" type="button" onClick={() => void download('pdf')}>导出 PDF</button><span aria-live="polite">{message}</span></div>;
 }

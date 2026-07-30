@@ -49,6 +49,23 @@ describe('runWorkerOnce', () => {
     expect(log).toHaveBeenCalledWith({ event: 'verification_job_failed', code: 'WORKER_RPC_FAILED:EMPTY_RESPONSE' });
   });
 
+  it('preserves safe report model failure codes when writing a failed status', async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+
+    await runWorkerOnce({
+      claim: async () => ({ id: 'job-id', sourceSnapshot: {} }),
+      process: async () => { throw new Error('REPORT_MODEL_FAILED:RATE_LIMITED'); },
+      update,
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      'job-id',
+      'failed',
+      'REPORT_MODEL_FAILED:RATE_LIMITED',
+      'REPORT_MODEL_FAILED:RATE_LIMITED',
+    );
+  });
+
   it('失败状态无法回写时记录独立的安全错误码', async () => {
     const log = vi.fn();
     const update = vi.fn().mockRejectedValue(new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE'));
