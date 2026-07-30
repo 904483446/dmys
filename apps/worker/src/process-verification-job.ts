@@ -116,12 +116,17 @@ export async function processVerificationJob(
           homepageReachable: evidence.homepageReachable,
           evidenceIds: evidence.evidenceIds,
         });
-        const report =
-          (await dependencies.generateReport?.({
+        let generatedReport: VerificationReport | null | undefined;
+        try {
+          generatedReport = await dependencies.generateReport?.({
             request: job.request,
             evidenceIds: evidence.evidenceIds,
             homepageReachable: evidence.homepageReachable,
-          })) ?? fallback;
+          });
+        } catch {
+          generatedReport = null;
+        }
+        const report = generatedReport ?? fallback;
         await dependencies.saveReport(job.id, report);
       } finally {
         await runningProject.stop();

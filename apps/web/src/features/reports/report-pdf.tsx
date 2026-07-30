@@ -1,7 +1,12 @@
 import { Document, Font, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { fileURLToPath } from 'node:url';
 
-import type { ReportDetail } from './report-types.js';
+import {
+  formatIssueSeverity,
+  formatReportVerdict,
+  formatVerificationItemStatus,
+  type ReportDetail,
+} from './report-types.js';
 
 const fontSource = fileURLToPath(new URL('../../assets/fonts/NotoSansSC-VF.ttf', import.meta.url));
 
@@ -15,19 +20,35 @@ const styles = StyleSheet.create({
   muted: { marginTop: 18, fontSize: 9 },
 });
 
+export function reportPdfLines(report: ReportDetail): string[] {
+  return [
+    `结论：${formatReportVerdict(report.verdict)}`,
+    `评分：${report.score} / 100`,
+    `置信度：${report.confidence} / 100`,
+    ...report.verifiedItems.map((item) => `${item.title}：${formatVerificationItemStatus(item.status)}`),
+    ...report.issues.flatMap((issue) => [
+      `${issue.title}（${formatIssueSeverity(issue.severity)}）`,
+      issue.description,
+      `修复提示词：${issue.repairPrompt}`,
+    ]),
+  ];
+}
+
 export function ReportPdfDocument({ report }: { report: ReportDetail }) {
+  const [verdict, score, confidence] = reportPdfLines(report);
+
   return (
     <Document title="VibeVerify 验收报告">
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>VibeVerify 验收报告</Text>
-        <Text>结论：{report.verdict}</Text>
-        <Text>评分：{report.score}</Text>
-        <Text>置信度：{report.confidence}</Text>
+        <Text>{verdict}</Text>
+        <Text>{score}</Text>
+        <Text>{confidence}</Text>
         <Text style={styles.heading}>已验证功能</Text>
         <View>
           {report.verifiedItems.map((item) => (
             <Text key={item.title} style={styles.item}>
-              {item.title}（{item.status}）
+              {item.title}：{formatVerificationItemStatus(item.status)}
             </Text>
           ))}
         </View>
@@ -35,7 +56,7 @@ export function ReportPdfDocument({ report }: { report: ReportDetail }) {
         <View>
           {report.issues.map((issue) => (
             <View key={issue.title} style={styles.item}>
-              <Text>{issue.title}</Text>
+              <Text>{issue.title}（{formatIssueSeverity(issue.severity)}）</Text>
               <Text>{issue.description}</Text>
               <Text>修复提示词：{issue.repairPrompt}</Text>
             </View>

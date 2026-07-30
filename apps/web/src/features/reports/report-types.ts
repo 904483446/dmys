@@ -34,6 +34,29 @@ export type ReportDetail = {
   issues: z.infer<typeof issueSchema>[];
 };
 
+export function formatReportVerdict(verdict: ReportDetail['verdict']): string {
+  return {
+    passed: '通过',
+    at_risk: '有风险',
+    failed: '未通过',
+  }[verdict];
+}
+
+export function formatVerificationItemStatus(status: ReportDetail['verifiedItems'][number]['status']): string {
+  return {
+    verified: '已验证',
+    not_verified: '未验证',
+  }[status];
+}
+
+export function formatIssueSeverity(severity: ReportDetail['issues'][number]['severity']): string {
+  return {
+    critical: '严重',
+    major: '重要',
+    minor: '轻微',
+  }[severity];
+}
+
 export function firstEmbeddedReport(input: unknown): unknown | null {
   if (Array.isArray(input)) return input[0] ?? null;
   return input ?? null;

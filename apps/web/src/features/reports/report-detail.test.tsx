@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { ReportDetail } from './report-detail.js';
@@ -13,6 +14,28 @@ const report = {
 };
 
 describe('ReportDetail', () => {
+  it('keeps report panels top-aligned and allows long list content to wrap', () => {
+    const css = readFileSync(new URL('../../app/styles.css', import.meta.url), 'utf8');
+
+    expect(css).toMatch(/\.report-detail\s*\{[^}]*align-items:\s*start/);
+    expect(css).toMatch(/\.report-evidence-panel,\s*\.report-issues-panel,\s*\.report-comparison\s*\{[^}]*align-self:\s*start/);
+    expect(css).toMatch(/\.report-evidence-panel li strong\s*\{[^}]*min-width:\s*0[^}]*overflow-wrap:\s*anywhere/);
+    expect(css).toMatch(/\.report-evidence-panel li span,\s*\.report-issue-heading span\s*\{[^}]*flex-shrink:\s*0/);
+  });
+
+  it('uses Chinese labels and 100-point metrics instead of internal enum values', () => {
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
+
+    expect(html).toContain('有风险');
+    expect(html).toContain('64 / 100');
+    expect(html).toContain('70 / 100');
+    expect(html).toContain('已验证');
+    expect(html).toContain('重要');
+    expect(html).not.toContain('>at_risk<');
+    expect(html).not.toContain('>verified<');
+    expect(html).not.toContain('>major<');
+  });
+
   it('按结论、证据、问题顺序展示报告', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
     expect(html.indexOf('自动验收建议')).toBeLessThan(html.indexOf('已验证功能'));

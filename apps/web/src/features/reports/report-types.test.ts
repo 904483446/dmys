@@ -8,8 +8,26 @@ const firstEmbeddedReport = (reportTypes as Record<string, unknown>).firstEmbedd
 const formatReportCreatedAt = (reportTypes as Record<string, unknown>).formatReportCreatedAt as
   | ((input: string) => string)
   | undefined;
+const formatReportVerdict = (reportTypes as Record<string, unknown>).formatReportVerdict as
+  | ((input: 'passed' | 'at_risk' | 'failed') => string)
+  | undefined;
+const formatVerificationItemStatus = (reportTypes as Record<string, unknown>).formatVerificationItemStatus as
+  | ((input: 'verified' | 'not_verified') => string)
+  | undefined;
+const formatIssueSeverity = (reportTypes as Record<string, unknown>).formatIssueSeverity as
+  | ((input: 'critical' | 'major' | 'minor') => string)
+  | undefined;
 
 describe('toReportDetail', () => {
+  it('formats report enums as user-facing Chinese labels', () => {
+    expect(formatReportVerdict).toBeTypeOf('function');
+    expect(formatVerificationItemStatus).toBeTypeOf('function');
+    expect(formatIssueSeverity).toBeTypeOf('function');
+    expect(formatReportVerdict?.('at_risk')).toBe('有风险');
+    expect(formatVerificationItemStatus?.('verified')).toBe('已验证');
+    expect(formatIssueSeverity?.('major')).toBe('重要');
+  });
+
   it('formats report timestamps in China Standard Time on the server', () => {
     expect(formatReportCreatedAt).toBeTypeOf('function');
     expect(formatReportCreatedAt?.('2026-07-23T08:50:51.000Z')).toContain('16:50:51');

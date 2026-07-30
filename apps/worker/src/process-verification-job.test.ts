@@ -3,6 +3,38 @@ import { describe, expect, it, vi } from 'vitest';
 import { createWorkerJobProcessor, processVerificationJob } from './process-verification-job.js';
 
 describe('processVerificationJob', () => {
+  it('falls back to a deterministic report when the report model boundary throws', async () => {
+    const saveReport = vi.fn().mockResolvedValue(undefined);
+
+    await expect(
+      processVerificationJob(
+        {
+          createWorkspace: async () => 'temporary-workspace',
+          removeWorkspace: vi.fn().mockResolvedValue(undefined),
+          prepareSource: async () => ({
+            projectDirectory: 'temporary-workspace',
+            packageJson: {
+              dependencies: { vite: '^6.0.0' },
+              scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' },
+            },
+          }),
+          run: async () => ({ exitCode: 0, output: 'ok' }),
+          startProject: async () => ({ stop: async () => undefined }),
+          collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: ['homepage-status'] }),
+          generateReport: async () => { throw new Error('REPORT_MODEL_UNAVAILABLE'); },
+          saveReport,
+          updateStatus: vi.fn().mockResolvedValue(undefined),
+        },
+        { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '验证首页' },
+      ),
+    ).resolves.toBeUndefined();
+
+    expect(saveReport).toHaveBeenCalledWith(
+      'job-id',
+      expect.objectContaining({ verdict: 'at_risk', verifiedItems: expect.any(Array) }),
+    );
+  });
+
   it('identifies the failed install command without exposing command output', async () => {
     await expect(
       processVerificationJob(

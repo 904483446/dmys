@@ -24,8 +24,29 @@ describe('runWorkerOnce', () => {
     });
 
     expect(result).toEqual({ status: 'failed', jobId: 'job-id' });
-    expect(update).toHaveBeenCalledWith('job-id', 'failed', 'WORKER_PROCESS_FAILED', '执行失败');
+    expect(update).toHaveBeenCalledWith('job-id', 'failed', 'WORKER_PROCESS_FAILED', 'WORKER_PROCESS_FAILED');
     expect(log).toHaveBeenCalledWith({ event: 'verification_job_failed', code: 'WORKER_PROCESS_FAILED' });
+  });
+
+  it('preserves safe RPC failure codes when writing a failed status', async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const log = vi.fn();
+
+    const result = await runWorkerOnce({
+      claim: async () => ({ id: 'job-id', sourceSnapshot: {} }),
+      process: async () => { throw new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE'); },
+      update,
+      log,
+    });
+
+    expect(result).toEqual({ status: 'failed', jobId: 'job-id' });
+    expect(update).toHaveBeenCalledWith(
+      'job-id',
+      'failed',
+      'WORKER_RPC_FAILED:EMPTY_RESPONSE',
+      'WORKER_RPC_FAILED:EMPTY_RESPONSE',
+    );
+    expect(log).toHaveBeenCalledWith({ event: 'verification_job_failed', code: 'WORKER_RPC_FAILED:EMPTY_RESPONSE' });
   });
 
   it('失败状态无法回写时记录独立的安全错误码', async () => {
