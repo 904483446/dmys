@@ -12,7 +12,7 @@ type WorkerDependencies = {
 };
 
 function toSafeFailureCode(message: string) {
-  return /^(?:PROJECT_COMMAND_FAILED|WORKER_RPC_FAILED)(?::[A-Z_]{1,64}){1,3}$/.test(message)
+  return /^(?:PROJECT_COMMAND_FAILED|WORKER_RPC_FAILED|REPORT_MODEL_FAILED)(?::[A-Z_]{1,64}){1,3}$/.test(message)
     ? message
     : 'WORKER_PROCESS_FAILED';
 }
@@ -27,9 +27,10 @@ export async function runWorkerOnce(dependencies: WorkerDependencies) {
     return { status: 'processed' as const, jobId: job.id };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Worker 处理失败';
-    dependencies.log?.({ event: 'verification_job_failed', code: toSafeFailureCode(message) });
+    const code = toSafeFailureCode(message);
+    dependencies.log?.({ event: 'verification_job_failed', code });
     try {
-      await dependencies.update(job.id, 'failed', 'WORKER_PROCESS_FAILED', message);
+      await dependencies.update(job.id, 'failed', code, code);
     } catch (persistError) {
       const persistMessage = persistError instanceof Error ? persistError.message : 'UNKNOWN';
       dependencies.log?.({

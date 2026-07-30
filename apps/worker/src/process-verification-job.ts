@@ -1,4 +1,4 @@
-import { createDeterministicReport } from '@vibeverify/prompting';
+import type { createDeterministicReport } from '@vibeverify/prompting';
 
 import { createProjectPlan } from './project-plan.js';
 import { withTemporaryWorkspace } from './temporary-workspace.js';
@@ -112,16 +112,12 @@ export async function processVerificationJob(
         await dependencies.updateStatus(job.id, 'testing');
         const evidence = await dependencies.collectBrowserEvidence(plan.localUrl);
         await dependencies.updateStatus(job.id, 'reporting');
-        const fallback = createDeterministicReport({
-          homepageReachable: evidence.homepageReachable,
+        if (dependencies.generateReport === undefined) throw new Error('REPORT_MODEL_FAILED:CONFIG');
+        const report = await dependencies.generateReport({
+          request: job.request,
           evidenceIds: evidence.evidenceIds,
+          homepageReachable: evidence.homepageReachable,
         });
-        const report =
-          (await dependencies.generateReport?.({
-            request: job.request,
-            evidenceIds: evidence.evidenceIds,
-            homepageReachable: evidence.homepageReachable,
-          })) ?? fallback;
         await dependencies.saveReport(job.id, report);
       } finally {
         await runningProject.stop();

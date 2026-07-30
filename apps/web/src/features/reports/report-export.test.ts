@@ -26,4 +26,22 @@ describe('renderReportMarkdown', () => {
     expect(output).not.toContain('artifacts/');
     expect(output).not.toContain('private/repo');
   });
+
+  it('exports Chinese report labels and 100-point metrics', () => {
+    const output = renderReportMarkdown({
+      verdict: 'at_risk',
+      score: 64,
+      confidence: 70,
+      summary: '存在风险',
+      verifiedItems: [{ title: '首页可访问', evidenceIds: [], status: 'verified' }],
+      issues: [{ severity: 'major', title: '保存失败', description: '提交后未更新', evidenceIds: [], repairPrompt: '修复保存逻辑' }],
+    });
+
+    expect(output).toContain('结论：有风险');
+    expect(output).toContain('评分：64 / 100');
+    expect(output).toContain('置信度：70 / 100');
+    expect(output).toContain('首页可访问：已验证');
+    expect(output).not.toContain('at_risk');
+    expect(output).not.toContain('verified');
+  });
 });

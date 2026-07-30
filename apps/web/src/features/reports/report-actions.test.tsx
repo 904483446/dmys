@@ -13,6 +13,9 @@ describe('ReportActions', () => {
     expect(html).toContain('复制修复提示词');
     expect(html).toContain('导出 Markdown');
     expect(html).toContain('导出 PDF');
+    expect(html).toContain('report-actions');
+    expect(html).toContain('report-action-primary');
+    expect(html).toContain('report-action-secondary');
     expect(html).not.toContain('重新验收');
   });
 

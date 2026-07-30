@@ -42,7 +42,7 @@ describe('createDeepSeekReportGenerator', () => {
     );
   });
 
-  it('模型响应或 schema 无效时返回 null，由调用方降级', async () => {
+  it('rejects invalid model responses with a safe failure code', async () => {
     const generate = createDeepSeekReportGenerator({
       apiKey: 'test-key',
       model: 'deepseek-chat',
@@ -50,6 +50,18 @@ describe('createDeepSeekReportGenerator', () => {
     });
     await expect(
       generate({ request: '验证首页', evidenceIds: [], homepageReachable: true }),
-    ).resolves.toBeNull();
+    ).rejects.toThrow('REPORT_MODEL_FAILED:RESPONSE_INVALID');
+  });
+
+  it('maps provider rate limits to a safe model failure code', async () => {
+    const generate = createDeepSeekReportGenerator({
+      apiKey: 'test-key',
+      model: 'deepseek-chat',
+      fetch: vi.fn().mockResolvedValue(new Response('rate limited', { status: 429 })),
+    });
+
+    await expect(
+      generate({ request: '验证首页', evidenceIds: [], homepageReachable: true }),
+    ).rejects.toThrow('REPORT_MODEL_FAILED:RATE_LIMITED');
   });
 });
