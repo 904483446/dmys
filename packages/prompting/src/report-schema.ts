@@ -11,11 +11,19 @@ const verifiedItemSchema = z
       context.addIssue({ code: 'custom', message: '已验证条目必须引用证据' });
   });
 
+const issueSchema = z.object({
+  severity: z.enum(['critical', 'major', 'minor']),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  evidenceIds: z.array(z.string().min(1)),
+  repairPrompt: z.string().min(1),
+});
+
 export const verificationReportSchema = z.object({
   verdict: z.enum(['passed', 'at_risk', 'failed']),
   score: z.number().int().min(0).max(100),
   confidence: z.number().int().min(0).max(100),
   summary: z.string().min(1),
   verifiedItems: z.array(verifiedItemSchema),
-  issues: z.array(z.unknown()),
+  issues: z.array(issueSchema),
 });
