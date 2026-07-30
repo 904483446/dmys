@@ -7,7 +7,7 @@ import {
   formatReportVerdict,
   formatVerificationItemStatus,
   type ReportDetail as Report,
-} from './report-types.js';
+} from './report-types';
 
 type Props = { jobId: string; status: string; report: Report | null; errorMessage: string | null; comparison?: ReportComparison | null };
 

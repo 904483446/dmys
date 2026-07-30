@@ -6,7 +6,7 @@ import {
   formatReportVerdict,
   formatVerificationItemStatus,
   type ReportDetail,
-} from './report-types.js';
+} from './report-types';
 
 const fontSource = fileURLToPath(new URL('../../assets/fonts/NotoSansSC-VF.ttf', import.meta.url));
 

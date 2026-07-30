@@ -3,7 +3,7 @@ import {
   formatReportVerdict,
   formatVerificationItemStatus,
   type ReportDetail,
-} from './report-types.js';
+} from './report-types';
 
 export function renderReportMarkdown(report: ReportDetail): string {
   return [
