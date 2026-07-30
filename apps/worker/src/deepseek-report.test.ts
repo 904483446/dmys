@@ -64,4 +64,33 @@ describe('createDeepSeekReportGenerator', () => {
       generate({ request: '验证首页', evidenceIds: [], homepageReachable: true }),
     ).rejects.toThrow('REPORT_MODEL_FAILED:RATE_LIMITED');
   });
+
+  it('accepts fenced snake_case JSON and sends the required report schema to the model', async () => {
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: '```json\n{"verdict":"at_risk","score":50,"confidence":40,"summary":"发现保存问题","verified_items":[{"title":"首页","status":"verified","evidence_ids":["homepage-status"]}],"issues":[{"severity":"major","title":"保存失败","description":"提交后未更新","evidence_ids":["homepage-status"],"repair_prompt":"修复保存逻辑"}]}\n```',
+              },
+            },
+          ],
+        }),
+        { status: 200 },
+      ),
+    );
+    const generate = createDeepSeekReportGenerator({ apiKey: 'test-key', model: 'deepseek-chat', fetch });
+
+    await expect(
+      generate({ request: '验证首页', evidenceIds: ['homepage-status'], homepageReachable: true }),
+    ).resolves.toMatchObject({
+      verifiedItems: [{ evidenceIds: ['homepage-status'] }],
+      issues: [{ repairPrompt: '修复保存逻辑', evidenceIds: ['homepage-status'] }],
+    });
+
+    const request = JSON.parse(fetch.mock.calls[0][1].body as string) as { messages: Array<{ content: string }> };
+    expect(request.messages[0].content).toContain('verifiedItems');
+    expect(request.messages[0].content).toContain('repairPrompt');
+  });
 });
