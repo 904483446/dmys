@@ -66,6 +66,23 @@ describe('runWorkerOnce', () => {
     );
   });
 
+  it('preserves a report provider HTTP status code', async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+
+    await runWorkerOnce({
+      claim: async () => ({ id: 'job-id', sourceSnapshot: {} }),
+      process: async () => { throw new Error('REPORT_MODEL_FAILED:PROVIDER:HTTP_400'); },
+      update,
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      'job-id',
+      'failed',
+      'REPORT_MODEL_FAILED:PROVIDER:HTTP_400',
+      'REPORT_MODEL_FAILED:PROVIDER:HTTP_400',
+    );
+  });
+
   it('失败状态无法回写时记录独立的安全错误码', async () => {
     const log = vi.fn();
     const update = vi.fn().mockRejectedValue(new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE'));
