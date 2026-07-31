@@ -137,4 +137,42 @@ describe('createDeepSeekReportGenerator', () => {
       ],
     });
   });
+
+  it.each([
+    ['WARNING', 'at_risk'],
+    ['needs-improvement', 'at_risk'],
+    ['风险', 'at_risk'],
+    ['not passed', 'failed'],
+    ['已通过', 'passed'],
+  ])('normalizes the model verdict alias %s to %s', async (verdict, expectedVerdict) => {
+    const generate = createDeepSeekReportGenerator({
+      apiKey: 'test-key',
+      model: 'deepseek-chat',
+      fetch: vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    verdict,
+                    score: 50,
+                    confidence: 40,
+                    summary: '模型结论',
+                    verifiedItems: [],
+                    issues: [],
+                  }),
+                },
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      ),
+    });
+
+    await expect(
+      generate({ request: '验证首页', evidenceIds: [], homepageReachable: true }),
+    ).resolves.toMatchObject({ verdict: expectedVerdict });
+  });
 });

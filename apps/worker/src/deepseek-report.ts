@@ -75,8 +75,37 @@ function normalizeModelReport(content: string): unknown {
   const value = recordOf(report);
   if (value === null) return report;
 
-  const normalizeVerdict = (input: unknown) =>
-    ({ '通过': 'passed', '有风险': 'at_risk', '未通过': 'failed', '失败': 'failed' }[String(input)] ?? input);
+  const normalizeVerdict = (input: unknown) => {
+    if (typeof input !== 'string') return input;
+    const key = input.trim().toLowerCase().replace(/[\s-]+/g, '_');
+    return ({
+      passed: 'passed',
+      pass: 'passed',
+      success: 'passed',
+      approved: 'passed',
+      '通过': 'passed',
+      '已通过': 'passed',
+      at_risk: 'at_risk',
+      risk: 'at_risk',
+      risky: 'at_risk',
+      warning: 'at_risk',
+      warn: 'at_risk',
+      needs_attention: 'at_risk',
+      needs_improvement: 'at_risk',
+      partial_pass: 'at_risk',
+      conditional_pass: 'at_risk',
+      '有风险': 'at_risk',
+      '风险': 'at_risk',
+      '警告': 'at_risk',
+      '需修复': 'at_risk',
+      failed: 'failed',
+      fail: 'failed',
+      not_passed: 'failed',
+      rejected: 'failed',
+      '未通过': 'failed',
+      '失败': 'failed',
+    }[key] ?? input);
+  };
   const normalizeStatus = (input: unknown) =>
     ({ '已验证': 'verified', '未验证': 'not_verified' }[String(input)] ?? input);
   const normalizeSeverity = (input: unknown) =>
