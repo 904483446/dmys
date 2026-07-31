@@ -1,5 +1,5 @@
 import { verificationReportSchema } from '@vibeverify/prompting';
-import type { createDeterministicReport } from '@vibeverify/prompting';
+import type { VerificationReport } from '@vibeverify/prompting';
 
 type DeepSeekInput = { request: string; evidenceIds: string[]; homepageReachable: boolean };
 type DeepSeekDependencies = {
@@ -218,7 +218,7 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
         || parsed.data.issues.some((issue) => issue.evidenceIds.some((id) => !knownEvidence.has(id)))
       )
         invalidModelResponse(dependencies, 'UNKNOWN_EVIDENCE');
-      return parsed.data as unknown as ReturnType<typeof createDeterministicReport>;
+      return parsed.data as VerificationReport;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('REPORT_MODEL_FAILED:')) throw error;
       invalidModelResponse(dependencies, 'PROVIDER_PAYLOAD');

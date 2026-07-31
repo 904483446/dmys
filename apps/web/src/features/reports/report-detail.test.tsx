@@ -23,6 +23,12 @@ describe('ReportDetail', () => {
     expect(css).toMatch(/\.report-evidence-panel li span,\s*\.report-issue-heading span\s*\{[^}]*flex-shrink:\s*0/);
   });
 
+  it('gives each evidence status an independent column beside a wrapping title', () => {
+    const css = readFileSync(new URL('../../app/styles.css', import.meta.url), 'utf8');
+
+    expect(css).toMatch(/\.report-evidence-panel li\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto[^}]*align-items:\s*start/);
+  });
+
   it('uses Chinese labels and 100-point metrics instead of internal enum values', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
 

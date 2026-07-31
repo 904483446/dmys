@@ -27,3 +27,4 @@ export const verificationReportSchema = z.object({
   verifiedItems: z.array(verifiedItemSchema),
   issues: z.array(issueSchema),
 });
+export type VerificationReport = z.infer<typeof verificationReportSchema>;
