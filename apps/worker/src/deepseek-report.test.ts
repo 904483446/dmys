@@ -72,6 +72,24 @@ describe('createDeepSeekReportGenerator', () => {
     ).rejects.toThrow('REPORT_MODEL_FAILED:RATE_LIMITED');
   });
 
+  it('records only the HTTP status for non-retriable provider failures', async () => {
+    const log = vi.fn();
+    const generate = createDeepSeekReportGenerator({
+      apiKey: 'test-key',
+      model: 'deepseek-chat',
+      fetch: vi.fn().mockResolvedValue(new Response('provider error', { status: 400 })),
+      log,
+    });
+
+    await expect(
+      generate({ request: '验证首页', evidenceIds: [], homepageReachable: true }),
+    ).rejects.toThrow('REPORT_MODEL_FAILED:PROVIDER:HTTP_400');
+    expect(log).toHaveBeenCalledWith({
+      event: 'report_model_provider_failure',
+      httpStatus: 400,
+    });
+  });
+
   it('accepts fenced snake_case JSON and sends the required report schema to the model', async () => {
     const fetch = vi.fn().mockResolvedValue(
       new Response(
