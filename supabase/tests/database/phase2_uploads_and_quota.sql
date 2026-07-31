@@ -1,6 +1,6 @@
 begin;
 
-select plan(4);
+select plan(5);
 
 select ok(
   exists(select 1 from storage.buckets where id = 'uploads' and public = false),
@@ -31,6 +31,15 @@ select throws_ok(
   'P0001',
   'DAILY_JOB_LIMIT_EXCEEDED',
   'fourth job is rejected'
+);
+
+update public.verification_jobs
+set status = 'failed', error_code = 'REPORT_MODEL_FAILED:PROVIDER:HTTP_503'
+where user_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
+select lives_ok(
+  $$select public.create_zip_verification_job('retry-after-model-failure', 'request', null, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/retry.zip', '{}'::jsonb)$$,
+  'a model-provider failure releases the daily acceptance quota'
 );
 
 select set_config('request.jwt.claim.sub', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', true);
