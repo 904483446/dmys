@@ -6,7 +6,23 @@ type DeepSeekDependencies = {
   apiKey: string;
   model: string;
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
+  log?: (entry: {
+    event: 'report_model_response_invalid';
+    reason: 'EMPTY_CONTENT' | 'JSON_PARSE' | 'SCHEMA' | 'UNKNOWN_EVIDENCE' | 'PROVIDER_PAYLOAD';
+    contentType?: string;
+    topLevelKeys?: string[];
+    invalidPaths?: string[];
+  }) => void;
 };
+
+function invalidModelResponse(
+  dependencies: DeepSeekDependencies,
+  reason: 'EMPTY_CONTENT' | 'JSON_PARSE' | 'SCHEMA' | 'UNKNOWN_EVIDENCE' | 'PROVIDER_PAYLOAD',
+  details: Omit<Parameters<NonNullable<DeepSeekDependencies['log']>>[0], 'event' | 'reason'> = {},
+): never {
+  dependencies.log?.({ event: 'report_model_response_invalid', reason, ...details });
+  throw new Error(`REPORT_MODEL_FAILED:RESPONSE_INVALID:${reason}`);
+}
 
 function recordOf(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -137,9 +153,29 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
         choices?: Array<{ message?: { content?: unknown } }>;
       };
       const content = body.choices?.[0]?.message?.content;
-      if (typeof content !== 'string') throw new Error('REPORT_MODEL_FAILED:RESPONSE_INVALID');
-      const parsed = verificationReportSchema.safeParse(normalizeModelReport(content));
-      if (!parsed.success) throw new Error('REPORT_MODEL_FAILED:RESPONSE_INVALID');
+      if (typeof content !== 'string')
+        invalidModelResponse(dependencies, 'EMPTY_CONTENT', { contentType: typeof content });
+      let normalized: unknown;
+      try {
+        normalized = normalizeModelReport(content);
+      } catch {
+        invalidModelResponse(dependencies, 'JSON_PARSE');
+      }
+      const parsed = verificationReportSchema.safeParse(normalized);
+      if (!parsed.success) {
+        const report = recordOf(normalized);
+        invalidModelResponse(dependencies, 'SCHEMA', {
+          topLevelKeys: report === null
+            ? []
+            : Object.keys(report)
+              .filter((key) => /^[A-Za-z0-9_]{1,48}$/.test(key))
+              .slice(0, 16),
+          invalidPaths: parsed.error.issues
+            .map((issue) => issue.path.join('.'))
+            .filter((path) => path.length > 0)
+            .slice(0, 8),
+        });
+      }
       const knownEvidence = new Set(input.evidenceIds);
       if (
         parsed.data.verifiedItems.some((item) =>
@@ -147,11 +183,11 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
         )
         || parsed.data.issues.some((issue) => issue.evidenceIds.some((id) => !knownEvidence.has(id)))
       )
-        throw new Error('REPORT_MODEL_FAILED:RESPONSE_INVALID');
+        invalidModelResponse(dependencies, 'UNKNOWN_EVIDENCE');
       return parsed.data as unknown as ReturnType<typeof createDeterministicReport>;
     } catch (error) {
-      if (error instanceof Error && error.message === 'REPORT_MODEL_FAILED:RESPONSE_INVALID') throw error;
-      throw new Error('REPORT_MODEL_FAILED:RESPONSE_INVALID');
+      if (error instanceof Error && error.message.startsWith('REPORT_MODEL_FAILED:')) throw error;
+      invalidModelResponse(dependencies, 'PROVIDER_PAYLOAD');
     }
   };
 }
