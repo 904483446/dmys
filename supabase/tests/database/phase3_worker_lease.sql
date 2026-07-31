@@ -1,6 +1,6 @@
 begin;
 
-select plan(9);
+select plan(10);
 
 select has_column(
   'public',
@@ -40,6 +40,10 @@ insert into public.verification_jobs (id, user_id, project_id, request_text)
 select job_id, user_id, project_id, 'Verify worker lease' from worker_lease_fixture;
 
 select public.claim_verification_job('worker-a');
+select ok(
+  (select lease_expires_at > now() + interval '9 minutes' from public.verification_jobs where id = (select job_id from worker_lease_fixture)),
+  'a claim gives long-running verification work a ten-minute lease'
+);
 select is(
   (select lease_owner from public.verification_jobs where id = (select job_id from worker_lease_fixture)),
   'worker-a',
