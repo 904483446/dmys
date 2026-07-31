@@ -43,14 +43,21 @@ describe('createDeepSeekReportGenerator', () => {
   });
 
   it('rejects invalid model responses with a safe failure code', async () => {
+    const log = vi.fn();
     const generate = createDeepSeekReportGenerator({
       apiKey: 'test-key',
       model: 'deepseek-chat',
       fetch: vi.fn().mockResolvedValue(new Response('{"choices":[]}', { status: 200 })),
+      log,
     });
     await expect(
       generate({ request: '验证首页', evidenceIds: [], homepageReachable: true }),
-    ).rejects.toThrow('REPORT_MODEL_FAILED:RESPONSE_INVALID');
+    ).rejects.toThrow('REPORT_MODEL_FAILED:RESPONSE_INVALID:EMPTY_CONTENT');
+    expect(log).toHaveBeenCalledWith({
+      event: 'report_model_response_invalid',
+      reason: 'EMPTY_CONTENT',
+      contentType: 'undefined',
+    });
   });
 
   it('maps provider rate limits to a safe model failure code', async () => {

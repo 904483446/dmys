@@ -29,6 +29,14 @@ export function createDefaultWorkerProcessor(
         return { newPage: () => browser.newPage(), close: () => browser.close() };
       },
     }),
-    ...(ai === null ? {} : { generateReport: createDeepSeekReportGenerator({ ...ai, fetch }) }),
+    ...(ai === null
+      ? {}
+      : {
+          generateReport: createDeepSeekReportGenerator({
+            ...ai,
+            fetch,
+            log: (entry) => console.error(JSON.stringify(entry)),
+          }),
+        }),
   });
 }
