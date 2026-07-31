@@ -6,13 +6,17 @@ type DeepSeekDependencies = {
   apiKey: string;
   model: string;
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
-  log?: (entry: {
-    event: 'report_model_response_invalid';
-    reason: 'EMPTY_CONTENT' | 'JSON_PARSE' | 'SCHEMA' | 'UNKNOWN_EVIDENCE' | 'PROVIDER_PAYLOAD';
-    contentType?: string;
-    topLevelKeys?: string[];
-    invalidPaths?: string[];
-  }) => void;
+  log?: (
+    entry:
+      | {
+          event: 'report_model_response_invalid';
+          reason: 'EMPTY_CONTENT' | 'JSON_PARSE' | 'SCHEMA' | 'UNKNOWN_EVIDENCE' | 'PROVIDER_PAYLOAD';
+          contentType?: string;
+          topLevelKeys?: string[];
+          invalidPaths?: string[];
+        }
+      | { event: 'report_model_provider_failure'; httpStatus: number },
+  ) => void;
 };
 
 function invalidModelResponse(
@@ -175,7 +179,8 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) throw new Error('REPORT_MODEL_FAILED:AUTH');
       if (response.status === 429) throw new Error('REPORT_MODEL_FAILED:RATE_LIMITED');
-      throw new Error('REPORT_MODEL_FAILED:PROVIDER');
+      dependencies.log?.({ event: 'report_model_provider_failure', httpStatus: response.status });
+      throw new Error(`REPORT_MODEL_FAILED:PROVIDER:HTTP_${response.status}`);
     }
     try {
       const body = (await response.json()) as {
