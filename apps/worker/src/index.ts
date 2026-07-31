@@ -1,5 +1,5 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import type { createDeterministicReport } from '@vibeverify/prompting';
+import type { VerificationReport } from '@vibeverify/prompting';
 
 import { runWorkerOnce } from './run-worker.js';
 import { createWorkerRpcAdapter } from './worker-supabase.js';
@@ -20,7 +20,7 @@ type WorkerRuntimeDependencies = {
   process: (
     job: { id: string; sourceSnapshot: unknown },
     updateStatus: (status: 'building' | 'running' | 'testing' | 'reporting') => Promise<void>,
-    saveReport: (report: ReturnType<typeof createDeterministicReport>) => Promise<void>,
+    saveReport: (report: VerificationReport) => Promise<void>,
   ) => Promise<void>;
 };
 

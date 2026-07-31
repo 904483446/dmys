@@ -1,4 +1,4 @@
-import type { createDeterministicReport } from '@vibeverify/prompting';
+import type { VerificationReport } from '@vibeverify/prompting';
 
 type RpcClient = {
   rpc: <T>(
@@ -66,7 +66,7 @@ export function createWorkerRpcAdapter(client: RpcClient, workerId: string) {
       if (response.error !== null) throw toWorkerRpcError(response.error);
       if (response.data === null) throw new Error('WORKER_RPC_FAILED:EMPTY_RESPONSE');
     },
-    async saveReport(jobId: string, report: ReturnType<typeof createDeterministicReport>) {
+    async saveReport(jobId: string, report: VerificationReport) {
       const response = await client.rpc<ClaimedJob>('save_verification_report_for_worker', {
         p_job_id: jobId,
         p_worker_id: workerId,

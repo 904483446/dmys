@@ -1,11 +1,10 @@
-import type { createDeterministicReport } from '@vibeverify/prompting';
+import type { VerificationReport } from '@vibeverify/prompting';
 
 import { createProjectPlan } from './project-plan.js';
 import { withTemporaryWorkspace } from './temporary-workspace.js';
 
 type ClaimedJob = { id: string; sourceSnapshot: unknown; request: string };
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> };
-type VerificationReport = ReturnType<typeof createDeterministicReport>;
 
 function pnpmInstallFailureCode(command: string, output: string) {
   if (!command.startsWith('pnpm install --frozen-lockfile')) return null;
@@ -55,7 +54,7 @@ export type ProcessingDependencies = {
   }) => Promise<VerificationReport | null>;
   saveReport: (
     jobId: string,
-    report: ReturnType<typeof createDeterministicReport>,
+    report: VerificationReport,
   ) => Promise<void>;
   updateStatus: (
     jobId: string,
@@ -69,7 +68,7 @@ export function createWorkerJobProcessor(dependencies: WorkerProcessorDependenci
   return (
     job: ClaimedJob,
     updateStatus: (status: 'building' | 'running' | 'testing' | 'reporting') => Promise<void>,
-    saveReport: (report: ReturnType<typeof createDeterministicReport>) => Promise<void>,
+    saveReport: (report: VerificationReport) => Promise<void>,
   ) =>
     processVerificationJob(
       {
