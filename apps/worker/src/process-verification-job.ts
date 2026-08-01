@@ -1,4 +1,4 @@
-import type { VerificationReport } from '@vibeverify/prompting';
+import type { TestIntent, VerificationReport } from '@vibeverify/prompting';
 
 import { createProjectPlan } from './project-plan.js';
 import { withTemporaryWorkspace } from './temporary-workspace.js';
@@ -46,11 +46,14 @@ export type ProcessingDependencies = {
   ) => Promise<{ stop: () => Promise<void> }>;
   collectBrowserEvidence: (
     url: string,
-  ) => Promise<{ homepageReachable: boolean; evidenceIds: string[] }>;
+    intent?: TestIntent,
+  ) => Promise<{ homepageReachable: boolean; evidenceIds: string[]; checks?: VerificationReport['verifiedItems'] }>;
+  generateTestIntent?: (input: { request: string }) => Promise<TestIntent>;
   generateReport?: (input: {
     request: string;
     evidenceIds: string[];
     homepageReachable: boolean;
+    checks?: VerificationReport['verifiedItems'];
   }) => Promise<VerificationReport | null>;
   saveReport: (
     jobId: string,
@@ -109,13 +112,17 @@ export async function processVerificationJob(
       );
       try {
         await dependencies.updateStatus(job.id, 'testing');
-        const evidence = await dependencies.collectBrowserEvidence(plan.localUrl);
+        const intent = dependencies.generateTestIntent === undefined
+          ? { checks: [{ template: 'homepage' as const, title: '首页可访问', expectedText: '首页' }] }
+          : await dependencies.generateTestIntent({ request: job.request });
+        const evidence = await dependencies.collectBrowserEvidence(plan.localUrl, intent);
         await dependencies.updateStatus(job.id, 'reporting');
         if (dependencies.generateReport === undefined) throw new Error('REPORT_MODEL_FAILED:CONFIG');
         const report = await dependencies.generateReport({
           request: job.request,
           evidenceIds: evidence.evidenceIds,
           homepageReachable: evidence.homepageReachable,
+          checks: evidence.checks ?? [],
         });
         await dependencies.saveReport(job.id, report);
       } finally {

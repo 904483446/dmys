@@ -1,7 +1,12 @@
 import { verificationReportSchema } from '@vibeverify/prompting';
 import type { VerificationReport } from '@vibeverify/prompting';
 
-type DeepSeekInput = { request: string; evidenceIds: string[]; homepageReachable: boolean };
+type DeepSeekInput = {
+  request: string;
+  evidenceIds: string[];
+  homepageReachable: boolean;
+  checks?: VerificationReport['verifiedItems'];
+};
 type DeepSeekDependencies = {
   apiKey: string;
   model: string;
@@ -167,7 +172,7 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
             {
               role: 'system',
               content:
-                '仅输出一个中文 JSON 对象，不要 Markdown 代码块。必须使用 camelCase 并包含 verdict、score（0-100 整数）、confidence（0-100 整数）、summary、verifiedItems、issues。verifiedItems 的每项必须含 title、status（verified 或 not_verified）、evidenceIds；issues 的每项必须含 severity（critical、major 或 minor）、title、description、evidenceIds、repairPrompt。只能引用提供的 evidenceIds；未提供的证据不得描述为已验证；每个问题都必须给出可直接复制的 repairPrompt；不得输出源码、密钥或令牌。',
+                '仅输出一个中文 JSON 对象，不要 Markdown 代码块。必须使用 camelCase 并包含 verdict、score（0-100 整数）、confidence（0-100 整数）、summary、verifiedItems、issues。verifiedItems 的每项必须含 title、status（verified 或 not_verified）、evidenceIds；issues 的每项必须含 severity（critical、major 或 minor）、title、description、evidenceIds、repairPrompt。checks 是 Worker 的逐条执行事实；同名条目的 status 必须完全一致，且不得新增已验证条目。只能引用提供的 evidenceIds；未提供的证据不得描述为已验证；每个问题都必须给出可直接复制的 repairPrompt；不得输出源码、密钥或令牌。',
             },
             { role: 'user', content: JSON.stringify(input) },
           ],
@@ -218,6 +223,9 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
         || parsed.data.issues.some((issue) => issue.evidenceIds.some((id) => !knownEvidence.has(id)))
       )
         invalidModelResponse(dependencies, 'UNKNOWN_EVIDENCE');
+      const executedChecks = new Map((input.checks ?? []).map((check) => [check.title, check.status]));
+      if (parsed.data.verifiedItems.some((item) => executedChecks.has(item.title) && executedChecks.get(item.title) !== item.status))
+        invalidModelResponse(dependencies, 'SCHEMA');
       return parsed.data as VerificationReport;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('REPORT_MODEL_FAILED:')) throw error;

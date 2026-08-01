@@ -21,11 +21,17 @@ const styles = StyleSheet.create({
 });
 
 export function reportPdfLines(report: ReportDetail): string[] {
+  const verifiedItems = report.verifiedItems.filter((item) => item.status === 'verified');
+  const unverifiedItems = report.verifiedItems.filter((item) => item.status === 'not_verified');
   return [
     `结论：${formatReportVerdict(report.verdict)}`,
     `评分：${report.score} / 100`,
     `置信度：${report.confidence} / 100`,
-    ...report.verifiedItems.map((item) => `${item.title}：${formatVerificationItemStatus(item.status)}`),
+    '功能验收明细',
+    `已验证（${verifiedItems.length}）`,
+    ...(verifiedItems.length === 0 ? ['无'] : verifiedItems.map((item) => `${item.title}：${formatVerificationItemStatus(item.status)}`)),
+    `未验证（${unverifiedItems.length}）`,
+    ...(unverifiedItems.length === 0 ? ['无'] : unverifiedItems.map((item) => `${item.title}：${formatVerificationItemStatus(item.status)}`)),
     ...report.issues.flatMap((issue) => [
       `${issue.title}（${formatIssueSeverity(issue.severity)}）`,
       issue.description,
@@ -36,6 +42,8 @@ export function reportPdfLines(report: ReportDetail): string[] {
 
 export function ReportPdfDocument({ report }: { report: ReportDetail }) {
   const [verdict, score, confidence] = reportPdfLines(report);
+  const verifiedItems = report.verifiedItems.filter((item) => item.status === 'verified');
+  const unverifiedItems = report.verifiedItems.filter((item) => item.status === 'not_verified');
 
   return (
     <Document title="VibeVerify 验收报告">
@@ -44,9 +52,16 @@ export function ReportPdfDocument({ report }: { report: ReportDetail }) {
         <Text>{verdict}</Text>
         <Text>{score}</Text>
         <Text>{confidence}</Text>
-        <Text style={styles.heading}>已验证功能</Text>
+        <Text style={styles.heading}>功能验收明细</Text>
         <View>
-          {report.verifiedItems.map((item) => (
+          <Text style={styles.item}>已验证（{verifiedItems.length}）</Text>
+          {verifiedItems.length === 0 ? <Text style={styles.item}>无</Text> : verifiedItems.map((item) => (
+            <Text key={item.title} style={styles.item}>
+              {item.title}：{formatVerificationItemStatus(item.status)}
+            </Text>
+          ))}
+          <Text style={styles.item}>未验证（{unverifiedItems.length}）</Text>
+          {unverifiedItems.length === 0 ? <Text style={styles.item}>无</Text> : unverifiedItems.map((item) => (
             <Text key={item.title} style={styles.item}>
               {item.title}：{formatVerificationItemStatus(item.status)}
             </Text>

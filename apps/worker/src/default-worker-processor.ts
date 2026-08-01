@@ -8,6 +8,7 @@ import { createPlaywrightBrowserEvidence } from './playwright-browser-evidence.j
 import { createWorkerJobProcessor } from './process-verification-job.js';
 import { createDefaultSourcePreparer } from './default-source-preparer.js';
 import { createDeepSeekReportGenerator } from './deepseek-report.js';
+import { createDeepSeekTestIntentGenerator } from './deepseek-test-intent.js';
 
 type WorkerSourceClient = Parameters<typeof createDefaultSourcePreparer>[0];
 
@@ -37,6 +38,7 @@ export function createDefaultWorkerProcessor(
             fetch,
             log: (entry) => console.error(JSON.stringify(entry)),
           }),
+          generateTestIntent: createDeepSeekTestIntentGenerator({ ...ai, fetch }),
         }),
   });
 }

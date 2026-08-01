@@ -12,7 +12,7 @@ type WorkerDependencies = {
 };
 
 function toSafeFailureCode(message: string) {
-  return /^(?:PROJECT_COMMAND_FAILED|WORKER_RPC_FAILED|REPORT_MODEL_FAILED)(?::[A-Z0-9_]{1,64}){1,3}$/.test(message)
+  return /^(?:PROJECT_COMMAND_FAILED|WORKER_RPC_FAILED|REPORT_MODEL_FAILED|TEST_INTENT_MODEL_FAILED)(?::[A-Z0-9_]{1,64}){1,3}$/.test(message)
     ? message
     : 'WORKER_PROCESS_FAILED';
 }
