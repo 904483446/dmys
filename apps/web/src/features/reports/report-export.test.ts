@@ -44,4 +44,18 @@ describe('renderReportMarkdown', () => {
     expect(output).not.toContain('at_risk');
     expect(output).not.toContain('verified');
   });
+
+  it('groups verified and unverified checks under an accurate heading', () => {
+    const output = renderReportMarkdown({
+      verdict: 'at_risk', score: 50, confidence: 70, summary: '存在风险', issues: [],
+      verifiedItems: [
+        { title: '首页可访问', evidenceIds: ['homepage'], status: 'verified' },
+        { title: '添加任务', evidenceIds: ['add'], status: 'not_verified' },
+      ],
+    });
+
+    expect(output).toContain('## 功能验收明细');
+    expect(output).toContain('### 已验证（1）');
+    expect(output).toContain('### 未验证（1）');
+  });
 });

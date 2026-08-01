@@ -42,10 +42,27 @@ describe('ReportDetail', () => {
     expect(html).not.toContain('>major<');
   });
 
+  it('separates verified and unverified checks instead of labelling one mixed list as verified', () => {
+    const mixedReport = {
+      ...report,
+      verifiedItems: [
+        report.verifiedItems[0]!,
+        { title: '添加任务', evidenceIds: [], status: 'not_verified' as const },
+      ],
+    };
+
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={mixedReport} errorMessage={null} />);
+
+    expect(html).toContain('功能验收明细');
+    expect(html).toContain('已验证（1）');
+    expect(html).toContain('未验证（1）');
+    expect(html).not.toContain('<h2 id="verified-items">已验证功能</h2>');
+  });
+
   it('按结论、证据、问题顺序展示报告', () => {
     const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={report} errorMessage={null} />);
-    expect(html.indexOf('自动验收建议')).toBeLessThan(html.indexOf('已验证功能'));
-    expect(html.indexOf('已验证功能')).toBeLessThan(html.indexOf('问题与修复提示词'));
+    expect(html.indexOf('自动验收建议')).toBeLessThan(html.indexOf('功能验收明细'));
+    expect(html.indexOf('功能验收明细')).toBeLessThan(html.indexOf('问题与修复提示词'));
     expect(html).toContain('report-summary');
     expect(html).toContain('report-issues');
     expect(html).toContain('report-metrics');

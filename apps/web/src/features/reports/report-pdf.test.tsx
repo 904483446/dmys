@@ -29,6 +29,20 @@ describe('ReportPdfDocument', () => {
     expect(lines).not.toContain('结论：at_risk');
   });
 
+  it('includes explicit verified and unverified headings in PDF lines', () => {
+    const lines = reportPdfLines?.({
+      verdict: 'at_risk', score: 50, confidence: 70, summary: '存在风险', issues: [],
+      verifiedItems: [
+        { title: '首页可访问', evidenceIds: ['homepage'], status: 'verified' },
+        { title: '添加任务', evidenceIds: ['add'], status: 'not_verified' },
+      ],
+    });
+
+    expect(lines).toContain('功能验收明细');
+    expect(lines).toContain('已验证（1）');
+    expect(lines).toContain('未验证（1）');
+  });
+
   it('仅以安全报告 DTO 渲染 PDF 内容', async () => {
     const output = await renderToString(
       <ReportPdfDocument

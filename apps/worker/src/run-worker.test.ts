@@ -66,6 +66,20 @@ describe('runWorkerOnce', () => {
     );
   });
 
+  it('preserves a test-intent model failure code for actionable diagnosis', async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+
+    await runWorkerOnce({
+      claim: async () => ({ id: 'job-id', sourceSnapshot: {} }),
+      process: async () => { throw new Error('TEST_INTENT_MODEL_FAILED:SCHEMA'); },
+      update,
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      'job-id', 'failed', 'TEST_INTENT_MODEL_FAILED:SCHEMA', 'TEST_INTENT_MODEL_FAILED:SCHEMA',
+    );
+  });
+
   it('preserves a report provider HTTP status code', async () => {
     const update = vi.fn().mockResolvedValue(undefined);
 
