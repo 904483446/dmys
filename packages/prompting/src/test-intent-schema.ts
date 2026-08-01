@@ -16,7 +16,7 @@ export const testIntentSchema = z.object({
     expectedText: z.string().trim().min(1).max(160),
     absentText: z.string().trim().min(1).max(160).optional(),
   }).superRefine((check, context) => {
-    if ((check.template === 'task_list_blank' || check.template === 'task_list_filter') && check.absentText === undefined)
+    if (check.template === 'task_list_blank' && check.absentText === undefined)
       context.addIssue({ code: 'custom', message: '该模板必须声明操作后不可见的文本' });
   })).min(1).max(8),
 });

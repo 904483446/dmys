@@ -48,6 +48,37 @@ describe('createPlaywrightBrowserEvidence', () => {
     expect(locator.click).toHaveBeenCalledOnce();
   });
 
+  it('runs stateful task-list checks sequentially on one page', async () => {
+    let releaseFirstFill: (() => void) | undefined;
+    const firstFill = new Promise<void>((resolve) => { releaseFirstFill = resolve; });
+    const fill = vi.fn(async (text: string) => {
+      if (text === '任务一') await firstFill;
+    });
+    const locator = {
+      fill,
+      click: vi.fn().mockResolvedValue(undefined),
+      check: vi.fn().mockResolvedValue(undefined),
+      isVisible: vi.fn().mockResolvedValue(true),
+    };
+    const page = {
+      on: vi.fn(), goto: vi.fn().mockResolvedValue({ status: () => 200 }),
+      getByPlaceholder: vi.fn().mockReturnValue(locator), getByRole: vi.fn().mockReturnValue(locator), getByText: vi.fn().mockReturnValue(locator),
+    };
+    const collectBrowserEvidence = createPlaywrightBrowserEvidence({
+      launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() }),
+    });
+
+    const run = collectBrowserEvidence('http://127.0.0.1:5173', {
+      checks: [
+        { template: 'task_list_add', title: '添加任务一', actionText: '任务一', expectedText: '任务一' },
+        { template: 'task_list_add', title: '添加任务二', actionText: '任务二', expectedText: '任务二' },
+      ],
+    });
+    await vi.waitFor(() => expect(fill).toHaveBeenCalledTimes(1));
+    releaseFirstFill?.();
+    await expect(run).resolves.toMatchObject({ checks: [{ status: 'verified' }, { status: 'verified' }] });
+  });
+
   it('records a missing assertion as unverified rather than treating the action as passed', async () => {
     const locator = {
       fill: vi.fn().mockResolvedValue(undefined),

@@ -15,6 +15,6 @@ describe('test intent schema', () => {
     }).success).toBe(false);
     expect(prompting.testIntentSchema.safeParse({
       checks: [{ template: 'task_list_filter', title: '筛选已完成', actionText: '已完成', expectedText: '完成任务' }],
-    }).success).toBe(false);
+    }).success).toBe(true);
   });
 });

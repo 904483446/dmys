@@ -35,7 +35,8 @@ export function createPlaywrightBrowserEvidence(
     try {
       const page = await browser.newPage();
       const evidence = await inspectLocalHomepage({ page }, url);
-      const checks = await Promise.all((intent?.checks ?? []).map((check) => runCheck(page, check)));
+      const checks: CheckEvidence[] = [];
+      for (const check of intent?.checks ?? []) checks.push(await runCheck(page, check));
       return {
         homepageReachable: evidence.homepageReachable,
         evidenceIds: ['homepage-status', 'console-summary', ...checks.flatMap((check) => check.evidenceIds)],
@@ -68,10 +69,10 @@ async function runCheck(page: BrowserPage, check: TestIntentCheck): Promise<Chec
       await page.getByRole('checkbox', { name: check.actionText }).check();
       if (!await page.getByText(check.expectedText).isVisible()) throw new Error('TEXT_NOT_VISIBLE');
     } else {
-      if (check.actionText === undefined || check.absentText === undefined) throw new Error('ACTION_OR_ABSENT_TEXT_REQUIRED');
+      if (check.actionText === undefined) throw new Error('ACTION_TEXT_REQUIRED');
       await page.getByRole('button', { name: check.actionText }).click();
       if (!await page.getByText(check.expectedText).isVisible()) throw new Error('TEXT_NOT_VISIBLE');
-      if (await page.getByText(check.absentText).isVisible()) throw new Error('UNEXPECTED_TEXT_VISIBLE');
+      if (check.absentText !== undefined && await page.getByText(check.absentText).isVisible()) throw new Error('UNEXPECTED_TEXT_VISIBLE');
     }
     return { title: check.title, status: 'verified', evidenceIds: [evidenceId] };
   } catch {
