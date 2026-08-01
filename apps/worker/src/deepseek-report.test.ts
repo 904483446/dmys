@@ -156,6 +156,25 @@ describe('createDeepSeekReportGenerator', () => {
     });
   });
 
+  it('replaces model-invented report items with the checks executed by the Worker', async () => {
+    const generate = createDeepSeekReportGenerator({
+      apiKey: 'test-key',
+      model: 'deepseek-chat',
+      fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({
+          verdict: 'failed', score: 0, confidence: 90, summary: '未执行具体功能检查',
+          verifiedItems: [{ title: '勾选任务', status: 'not_verified', evidenceIds: ['homepage-status'] }],
+          issues: [],
+        }) } }],
+      }))),
+    });
+
+    await expect(generate({
+      request: '验证首页', evidenceIds: ['homepage-status'], homepageReachable: true,
+      checks: [],
+    })).resolves.toMatchObject({ verifiedItems: [] });
+  });
+
   it.each([
     ['WARNING', 'at_risk'],
     ['needs-improvement', 'at_risk'],

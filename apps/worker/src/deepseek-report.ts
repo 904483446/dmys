@@ -200,7 +200,10 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
       } catch {
         invalidModelResponse(dependencies, 'JSON_PARSE');
       }
-      const parsed = verificationReportSchema.safeParse(normalized);
+      const reportWithWorkerChecks = input.checks === undefined || recordOf(normalized) === null
+        ? normalized
+        : { ...normalized as Record<string, unknown>, verifiedItems: input.checks };
+      const parsed = verificationReportSchema.safeParse(reportWithWorkerChecks);
       if (!parsed.success) {
         const report = recordOf(normalized);
         invalidModelResponse(dependencies, 'SCHEMA', {
@@ -223,9 +226,6 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
         || parsed.data.issues.some((issue) => issue.evidenceIds.some((id) => !knownEvidence.has(id)))
       )
         invalidModelResponse(dependencies, 'UNKNOWN_EVIDENCE');
-      const executedChecks = new Map((input.checks ?? []).map((check) => [check.title, check.status]));
-      if (parsed.data.verifiedItems.some((item) => executedChecks.has(item.title) && executedChecks.get(item.title) !== item.status))
-        invalidModelResponse(dependencies, 'SCHEMA');
       return parsed.data as VerificationReport;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('REPORT_MODEL_FAILED:')) throw error;
