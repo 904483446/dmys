@@ -42,6 +42,12 @@ describe('ReportDetail', () => {
     expect(html).not.toContain('>major<');
   });
 
+  it('keeps horizontal padding on evidence and issue panels', () => {
+    const css = readFileSync(new URL('../../app/styles.css', import.meta.url), 'utf8');
+
+    expect(css).not.toMatch(/\.report-evidence,\s*\.report-issues\s*\{[^}]*padding:\s*1\.5rem\s+0/);
+  });
+
   it('separates verified and unverified checks instead of labelling one mixed list as verified', () => {
     const mixedReport = {
       ...report,

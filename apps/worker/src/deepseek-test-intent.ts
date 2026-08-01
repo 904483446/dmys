@@ -8,18 +8,8 @@ type TestIntentDependencies = {
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
 };
 
-function conservativeIntent(request: string): TestIntent {
-  if (/任务清单|今日任务/.test(request)) {
-    return {
-      checks: [
-        { template: 'task_list_add', title: '添加任务', actionText: '验收新增任务', expectedText: '验收新增任务' },
-        { template: 'task_list_blank', title: '空输入不新增任务', expectedText: '请输入任务内容', absentText: '验收空任务' },
-        { template: 'task_list_toggle', title: '勾选任务', actionText: '整理需求文档', expectedText: '剩余 2 项待完成任务' },
-        { template: 'task_list_filter', title: '筛选已完成任务', actionText: '已完成', expectedText: '整理需求文档', absentText: '检查首页样式' },
-      ],
-    };
-  }
-  return { checks: [{ template: 'homepage', title: '首页可访问', expectedText: '首页' }] };
+function conservativeIntent(): TestIntent {
+  return { checks: [] };
 }
 
 export function createDeepSeekTestIntentGenerator(dependencies: TestIntentDependencies) {
@@ -54,6 +44,6 @@ export function createDeepSeekTestIntentGenerator(dependencies: TestIntentDepend
         // The fallback is an allowlisted Worker plan; no model text is retained or executed.
       }
     }
-    return conservativeIntent(input.request);
+    return conservativeIntent();
   };
 }

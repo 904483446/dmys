@@ -33,16 +33,14 @@ describe('createDeepSeekTestIntentGenerator', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('uses a conservative task-list intent when both model responses are malformed', async () => {
+  it('does not invent task-list actions when both model responses are malformed', async () => {
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       choices: [{ message: { content: '{not-json}' } }],
     })));
     const generate = createDeepSeekTestIntentGenerator({ apiKey: 'test-key', model: 'deepseek-chat', fetch });
 
     const intent = await generate({ request: '请验收中文任务清单：添加任务、空输入、勾选、筛选' });
-    expect(intent.checks).toContainEqual(
-      expect.objectContaining({ template: 'task_list_add', title: '添加任务' }),
-    );
+    expect(intent.checks).toEqual([]);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
