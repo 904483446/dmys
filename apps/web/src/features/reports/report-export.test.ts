@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { renderReportMarkdown } from './report-export.js';
+import type { ReportDetail } from './report-types.js';
 
 describe('renderReportMarkdown', () => {
   it('包含修复提示词但不包含私有来源数据', () => {
@@ -57,5 +58,20 @@ describe('renderReportMarkdown', () => {
     expect(output).toContain('## 功能验收明细');
     expect(output).toContain('### 已验证（1）');
     expect(output).toContain('### 未验证（1）');
+  });
+
+  it('exports manual-review requirement evidence without presenting it as a failure', () => {
+    const manualReviewReport: ReportDetail = {
+      verdict: 'at_risk', score: 70, confidence: 65, summary: '需要补充验收条件', issues: [],
+      verifiedItems: [{
+        title: '待人工补充验收条件', sourceRequirement: '登录后删除账户',
+        detail: '涉及禁止自动执行的删除操作。', evidenceIds: [], status: 'manual_review',
+      }],
+    };
+    const output = renderReportMarkdown(manualReviewReport);
+
+    expect(output).toContain('### 待人工补充（1）');
+    expect(output).toContain('原始需求：登录后删除账户');
+    expect(output).toContain('执行结果：涉及禁止自动执行的删除操作。');
   });
 });

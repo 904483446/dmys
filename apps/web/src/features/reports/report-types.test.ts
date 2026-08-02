@@ -12,7 +12,7 @@ const formatReportVerdict = (reportTypes as Record<string, unknown>).formatRepor
   | ((input: 'passed' | 'at_risk' | 'failed') => string)
   | undefined;
 const formatVerificationItemStatus = (reportTypes as Record<string, unknown>).formatVerificationItemStatus as
-  | ((input: 'verified' | 'not_verified') => string)
+  | ((input: 'verified' | 'not_verified' | 'manual_review') => string)
   | undefined;
 const formatIssueSeverity = (reportTypes as Record<string, unknown>).formatIssueSeverity as
   | ((input: 'critical' | 'major' | 'minor') => string)
@@ -25,7 +25,28 @@ describe('toReportDetail', () => {
     expect(formatIssueSeverity).toBeTypeOf('function');
     expect(formatReportVerdict?.('at_risk')).toBe('有风险');
     expect(formatVerificationItemStatus?.('verified')).toBe('已验证');
+    expect(formatVerificationItemStatus?.('manual_review')).toBe('待人工补充');
     expect(formatIssueSeverity?.('major')).toBe('重要');
+  });
+
+  it('preserves a requirement and execution detail for manual-review items', () => {
+    expect(
+      reportTypes.toReportDetail({
+        verdict: 'at_risk', score: 70, confidence: 65, summary: '需要补充验收条件',
+        verified_items: [{
+          title: '待人工补充验收条件',
+          sourceRequirement: '登录后删除账户',
+          detail: '涉及禁止自动执行的删除操作。',
+          evidenceIds: [],
+          status: 'manual_review',
+        }],
+        issues: [],
+      }).verifiedItems,
+    ).toEqual([expect.objectContaining({
+      sourceRequirement: '登录后删除账户',
+      detail: '涉及禁止自动执行的删除操作。',
+      status: 'manual_review',
+    })]);
   });
 
   it('formats report timestamps in China Standard Time on the server', () => {
@@ -70,7 +91,13 @@ describe('toReportDetail', () => {
       score: 64,
       confidence: 70,
       summary: '存在风险',
-      verifiedItems: [{ title: '首页可访问', evidenceIds: ['homepage-ok'], status: 'verified' }],
+      verifiedItems: [{
+        title: '首页可访问',
+        sourceRequirement: '历史报告未保留原始需求',
+        detail: '历史报告未保留执行结果',
+        evidenceIds: ['homepage-ok'],
+        status: 'verified',
+      }],
       issues: [
         {
           severity: 'major',
