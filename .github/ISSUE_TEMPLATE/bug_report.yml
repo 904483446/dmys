@@ -1,0 +1,62 @@
+name: 缺陷报告
+description: 提交可复现且不包含敏感信息的产品缺陷。
+title: "[缺陷]: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 问题摘要
+      description: 请简要说明发生了什么，以及它影响的功能。
+      placeholder: 例如：提交任务后状态一直停留在“排队中”。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_requirements
+    attributes:
+      label: 用户验收需求
+      description: 请说明用户需要能够完成什么，以便确认修复有效。
+      placeholder: 例如：当任务完成时，用户应当在报告列表中看到“已完成”状态。
+    validations:
+      required: true
+  - type: textarea
+    id: actual_result
+    attributes:
+      label: 实际结果
+      description: 请描述当前实际发生的结果。
+    validations:
+      required: true
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: 预期结果
+      description: 请描述你认为应当发生的结果。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: 复现步骤
+      description: 请按顺序提供最小复现路径，并说明所用浏览器或环境。
+      placeholder: |
+        1. 打开……
+        2. 输入……
+        3. 点击……
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图或脱敏日志
+      description: 可附截图或已脱敏的日志。请勿上传 .env、Token、Cookie、密钥或用户私有源码。
+    validations:
+      required: false
+  - type: checkboxes
+    id: security_confirmation
+    attributes:
+      label: 安全确认
+      description: 提交前请确认材料已完成脱敏。
+      options:
+        - label: 我确认未提交 Token、Cookie、密钥、用户私有源码或 .env 文件。
+          required: true

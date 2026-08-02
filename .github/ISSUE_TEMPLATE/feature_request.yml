@@ -1,0 +1,42 @@
+name: 功能请求
+description: 提出可验证、符合隐私边界的产品改进建议。
+title: "[功能]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: user_problem
+    attributes:
+      label: 用户问题
+      description: 请说明当前用户遇到的具体困难或未被满足的需求。
+    validations:
+      required: true
+  - type: textarea
+    id: target_users
+    attributes:
+      label: 目标用户
+      description: 请描述受影响的用户角色、使用场景和规模。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: 验收标准
+      description: 请使用“当……时，应当……”格式，列出可观察、可验证的结果。
+      placeholder: 当用户提交有效任务时，应当在任务列表中看到对应的处理状态。
+    validations:
+      required: true
+  - type: textarea
+    id: privacy_boundary
+    attributes:
+      label: 风险/隐私边界
+      description: 请说明可能的误用、数据风险、权限要求或不应处理的信息。
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案
+      description: 请说明已考虑的替代方式，以及为什么它们不能充分解决该问题。
+    validations:
+      required: true
