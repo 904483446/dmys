@@ -1,7 +1,8 @@
-import type { TestIntent, VerificationReport } from '@vibeverify/prompting';
+import type { AcceptancePlan, VerificationReport } from '@vibeverify/prompting';
 
 import { createProjectPlan } from './project-plan.js';
 import { withTemporaryWorkspace } from './temporary-workspace.js';
+import type { CheckEvidence } from './playwright-browser-evidence.js';
 
 type ClaimedJob = { id: string; sourceSnapshot: unknown; request: string };
 type PackageJson = { dependencies?: Record<string, string>; scripts?: Record<string, string> };
@@ -46,9 +47,9 @@ export type ProcessingDependencies = {
   ) => Promise<{ stop: () => Promise<void> }>;
   collectBrowserEvidence: (
     url: string,
-    intent?: TestIntent,
-  ) => Promise<{ homepageReachable: boolean; evidenceIds: string[]; checks?: VerificationReport['verifiedItems'] }>;
-  generateTestIntent?: (input: { request: string }) => Promise<TestIntent>;
+    plan?: AcceptancePlan,
+  ) => Promise<{ homepageReachable: boolean; evidenceIds: string[]; checks?: CheckEvidence[] }>;
+  generateTestIntent?: (input: { request: string }) => Promise<AcceptancePlan>;
   generateReport?: (input: {
     request: string;
     evidenceIds: string[];
@@ -112,10 +113,16 @@ export async function processVerificationJob(
       );
       try {
         await dependencies.updateStatus(job.id, 'testing');
-        const intent = dependencies.generateTestIntent === undefined
-          ? { checks: [{ template: 'homepage' as const, title: '首页可访问', expectedText: '首页' }] }
+        const acceptancePlan = dependencies.generateTestIntent === undefined
+          ? {
+              criteria: [],
+              manualReview: [{
+                requirement: job.request,
+                reason: '未配置验收计划生成器；请补充页面可见文本、控件名称和预期结果。',
+              }],
+            }
           : await dependencies.generateTestIntent({ request: job.request });
-        const evidence = await dependencies.collectBrowserEvidence(plan.localUrl, intent);
+        const evidence = await dependencies.collectBrowserEvidence(plan.localUrl, acceptancePlan);
         await dependencies.updateStatus(job.id, 'reporting');
         if (dependencies.generateReport === undefined) throw new Error('REPORT_MODEL_FAILED:CONFIG');
         const report = await dependencies.generateReport({

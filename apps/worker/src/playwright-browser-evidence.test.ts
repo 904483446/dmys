@@ -3,113 +3,61 @@ import { describe, expect, it, vi } from 'vitest';
 import { createPlaywrightBrowserEvidence } from './playwright-browser-evidence.js';
 
 describe('createPlaywrightBrowserEvidence', () => {
-  it('只采集本地首页，并在采集完成后关闭浏览器', async () => {
+  it('collects only homepage evidence when the plan has no executable criteria', async () => {
     const close = vi.fn().mockResolvedValue(undefined);
-    const page = {
-      on: vi.fn(),
-      goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-    };
-    const launch = vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close });
-    const collectBrowserEvidence = createPlaywrightBrowserEvidence({ launch });
+    const page = { on: vi.fn(), goto: vi.fn().mockResolvedValue({ status: () => 200 }) };
+    const collect = createPlaywrightBrowserEvidence({ launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close }) });
 
-    await expect(collectBrowserEvidence('http://127.0.0.1:5173')).resolves.toEqual({
-      homepageReachable: true,
-      evidenceIds: ['homepage-status', 'console-summary'],
-      checks: [],
+    await expect(collect('http://127.0.0.1:5173', { criteria: [], manualReview: [] } as never)).resolves.toMatchObject({
+      homepageReachable: true, checks: [], evidenceIds: ['homepage-status', 'console-summary'],
     });
-    expect(launch).toHaveBeenCalledWith({ headless: true });
     expect(close).toHaveBeenCalledOnce();
   });
 
-  it('runs only the mapped task-list actions and records one result per check', async () => {
-    const locator = {
-      fill: vi.fn().mockResolvedValue(undefined),
-      click: vi.fn().mockResolvedValue(undefined),
-      check: vi.fn().mockResolvedValue(undefined),
-      isVisible: vi.fn().mockResolvedValue(true),
-    };
-    const page = {
-      on: vi.fn(),
-      goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-      getByPlaceholder: vi.fn().mockReturnValue(locator),
-      getByRole: vi.fn().mockReturnValue(locator),
-      getByText: vi.fn().mockReturnValue(locator),
-    };
-    const launch = vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() });
-    const collectBrowserEvidence = createPlaywrightBrowserEvidence({ launch });
-
-    await expect(collectBrowserEvidence('http://127.0.0.1:5173', {
-      checks: [{ template: 'task_list_add', title: '添加任务', actionText: '买牛奶', expectedText: '买牛奶' }],
-    })).resolves.toMatchObject({
-      evidenceIds: ['homepage-status', 'console-summary', 'task_list_add'],
-      checks: [{ title: '添加任务', status: 'verified', evidenceIds: ['task_list_add'] }],
-    });
-    expect(locator.fill).toHaveBeenCalledWith('买牛奶');
-    expect(locator.click).toHaveBeenCalledOnce();
-  });
-
-  it('runs stateful task-list checks sequentially on one page', async () => {
-    let releaseFirstFill: (() => void) | undefined;
-    const firstFill = new Promise<void>((resolve) => { releaseFirstFill = resolve; });
-    const fill = vi.fn(async (text: string) => {
-      if (text === '任务一') await firstFill;
-    });
-    const locator = {
-      fill,
-      click: vi.fn().mockResolvedValue(undefined),
-      check: vi.fn().mockResolvedValue(undefined),
-      isVisible: vi.fn().mockResolvedValue(true),
-    };
+  it('executes a user-derived semantic criterion and records its action summary', async () => {
+    const fill = vi.fn().mockResolvedValue(undefined);
+    const click = vi.fn().mockResolvedValue(undefined);
+    const locator = { fill, click, check: vi.fn(), isVisible: vi.fn().mockResolvedValue(true) };
     const page = {
       on: vi.fn(), goto: vi.fn().mockResolvedValue({ status: () => 200 }),
       getByPlaceholder: vi.fn().mockReturnValue(locator), getByRole: vi.fn().mockReturnValue(locator), getByText: vi.fn().mockReturnValue(locator),
     };
-    const collectBrowserEvidence = createPlaywrightBrowserEvidence({
-      launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() }),
-    });
+    const collect = createPlaywrightBrowserEvidence({ launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() }) });
 
-    const run = collectBrowserEvidence('http://127.0.0.1:5173', {
-      checks: [
-        { template: 'task_list_add', title: '添加任务一', actionText: '任务一', expectedText: '任务一' },
-        { template: 'task_list_add', title: '添加任务二', actionText: '任务二', expectedText: '任务二' },
-      ],
+    await expect(collect('http://127.0.0.1:5173', {
+      criteria: [{
+        id: 'add-book', title: '添加《三体》', sourceRequirement: '在“书名”填写“三体”后点击“新增”',
+        steps: [
+          { kind: 'fill_input', placeholder: '书名', value: '三体' },
+          { kind: 'click_button', name: '新增' },
+          { kind: 'assert_text_visible', text: '三体' },
+        ],
+      }], manualReview: [],
+    } as never)).resolves.toMatchObject({
+      checks: [{
+        title: '添加《三体》', sourceRequirement: '在“书名”填写“三体”后点击“新增”',
+        detail: '填写“书名”：三体；点击“新增”；确认“三体”可见', status: 'verified',
+      }],
     });
-    await vi.waitFor(() => expect(fill).toHaveBeenCalledTimes(1));
-    releaseFirstFill?.();
-    await expect(run).resolves.toMatchObject({ checks: [{ status: 'verified' }, { status: 'verified' }] });
+    expect(fill).toHaveBeenCalledWith('三体');
+    expect(click).toHaveBeenCalledOnce();
   });
 
-  it('records a missing assertion as unverified rather than treating the action as passed', async () => {
-    const locator = {
-      fill: vi.fn().mockResolvedValue(undefined),
-      click: vi.fn().mockResolvedValue(undefined),
-      check: vi.fn().mockResolvedValue(undefined),
-      isVisible: vi.fn().mockResolvedValue(false),
-    };
+  it('marks only the failed criterion as unverified and continues later criteria', async () => {
+    const firstText = { isVisible: vi.fn().mockResolvedValue(false) };
+    const secondText = { isVisible: vi.fn().mockResolvedValue(true) };
     const page = {
       on: vi.fn(), goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-      getByPlaceholder: vi.fn().mockReturnValue(locator), getByRole: vi.fn().mockReturnValue(locator), getByText: vi.fn().mockReturnValue(locator),
+      getByPlaceholder: vi.fn(), getByRole: vi.fn(),
+      getByText: vi.fn((text: string) => text === '不存在' ? firstText : secondText),
     };
-    const collectBrowserEvidence = createPlaywrightBrowserEvidence({
-      launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() }),
-    });
+    const collect = createPlaywrightBrowserEvidence({ launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() }) });
 
-    await expect(collectBrowserEvidence('http://127.0.0.1:5173', {
-      checks: [{ template: 'task_list_add', title: '添加任务', actionText: '买牛奶', expectedText: '买牛奶' }],
-    })).resolves.toMatchObject({ checks: [{ title: '添加任务', status: 'not_verified' }] });
-  });
-
-  it('requires filtering to make one result visible and another result absent', async () => {
-    const locator = { fill: vi.fn(), click: vi.fn().mockResolvedValue(undefined), check: vi.fn(), isVisible: vi.fn().mockResolvedValue(true) };
-    const page = {
-      on: vi.fn(), goto: vi.fn().mockResolvedValue({ status: () => 200 }),
-      getByPlaceholder: vi.fn().mockReturnValue(locator), getByRole: vi.fn().mockReturnValue(locator),
-      getByText: vi.fn((text: string) => ({ ...locator, isVisible: vi.fn().mockResolvedValue(text !== '待完成任务') })),
-    };
-    const collectBrowserEvidence = createPlaywrightBrowserEvidence({ launch: vi.fn().mockResolvedValue({ newPage: vi.fn().mockResolvedValue(page), close: vi.fn() }) });
-
-    await expect(collectBrowserEvidence('http://127.0.0.1:5173', {
-      checks: [{ template: 'task_list_filter', title: '筛选已完成', actionText: '已完成', expectedText: '完成任务', absentText: '待完成任务' }],
-    })).resolves.toMatchObject({ checks: [{ title: '筛选已完成', status: 'verified' }] });
+    await expect(collect('http://127.0.0.1:5173', {
+      criteria: [
+        { id: 'missing', title: '不存在的文本', sourceRequirement: '看到不存在', steps: [{ kind: 'assert_text_visible', text: '不存在' }] },
+        { id: 'present', title: '可见文本', sourceRequirement: '看到存在', steps: [{ kind: 'assert_text_visible', text: '存在' }] },
+      ], manualReview: [],
+    } as never)).resolves.toMatchObject({ checks: [{ status: 'not_verified' }, { status: 'verified' }] });
   });
 });
