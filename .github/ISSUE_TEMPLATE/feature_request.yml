@@ -1,6 +1,6 @@
 name: 功能请求
 description: 提出可验证、符合隐私边界的产品改进建议。
-title: "[功能]: "
+title: '[功能]: '
 labels:
   - enhancement
 body:

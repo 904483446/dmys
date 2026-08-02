@@ -1,6 +1,6 @@
 name: 缺陷报告
 description: 提交可复现且不包含敏感信息的产品缺陷。
-title: "[缺陷]: "
+title: '[缺陷]: '
 labels:
   - bug
 body:
