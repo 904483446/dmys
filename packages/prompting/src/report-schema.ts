@@ -3,7 +3,9 @@ import { z } from 'zod';
 const verifiedItemSchema = z
   .object({
     title: z.string().min(1),
-    status: z.enum(['verified', 'not_verified']),
+    sourceRequirement: z.string().min(1).optional().default('历史报告未保留原始需求'),
+    detail: z.string().min(1).optional().default('历史报告未保留执行结果'),
+    status: z.enum(['verified', 'not_verified', 'manual_review']),
     evidenceIds: z.array(z.string().min(1)),
   })
   .superRefine((item, context) => {

@@ -55,6 +55,7 @@ export type ProcessingDependencies = {
     evidenceIds: string[];
     homepageReachable: boolean;
     checks?: VerificationReport['verifiedItems'];
+    manualReview?: AcceptancePlan['manualReview'];
   }) => Promise<VerificationReport | null>;
   saveReport: (
     jobId: string,
@@ -130,6 +131,7 @@ export async function processVerificationJob(
           evidenceIds: evidence.evidenceIds,
           homepageReachable: evidence.homepageReachable,
           checks: evidence.checks ?? [],
+          manualReview: acceptancePlan.manualReview,
         });
         await dependencies.saveReport(job.id, report);
       } finally {
