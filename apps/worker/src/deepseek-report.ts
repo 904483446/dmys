@@ -1,11 +1,12 @@
 import { verificationReportSchema } from '@vibeverify/prompting';
-import type { VerificationReport } from '@vibeverify/prompting';
+import type { AcceptancePlan, VerificationReport } from '@vibeverify/prompting';
 
 type DeepSeekInput = {
   request: string;
   evidenceIds: string[];
   homepageReachable: boolean;
   checks?: VerificationReport['verifiedItems'];
+  manualReview?: AcceptancePlan['manualReview'];
 };
 type DeepSeekDependencies = {
   apiKey: string;
@@ -200,9 +201,16 @@ export function createDeepSeekReportGenerator(dependencies: DeepSeekDependencies
       } catch {
         invalidModelResponse(dependencies, 'JSON_PARSE');
       }
-      const reportWithWorkerChecks = input.checks === undefined || recordOf(normalized) === null
+      const manualReviewItems = (input.manualReview ?? []).map((item) => ({
+        title: '待人工补充验收条件',
+        sourceRequirement: item.requirement,
+        detail: item.reason,
+        status: 'manual_review' as const,
+        evidenceIds: [],
+      }));
+      const reportWithWorkerChecks = (input.checks === undefined && input.manualReview === undefined) || recordOf(normalized) === null
         ? normalized
-        : { ...normalized as Record<string, unknown>, verifiedItems: input.checks };
+        : { ...normalized as Record<string, unknown>, verifiedItems: [...(input.checks ?? []), ...manualReviewItems] };
       const parsed = verificationReportSchema.safeParse(reportWithWorkerChecks);
       if (!parsed.success) {
         const report = recordOf(normalized);

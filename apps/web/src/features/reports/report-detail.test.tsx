@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { ReportDetail } from './report-detail.js';
+import type { ReportDetail as ReportDetailType } from './report-types.js';
 
 const report = {
   verdict: 'at_risk' as const,
@@ -63,6 +64,26 @@ describe('ReportDetail', () => {
     expect(html).toContain('已验证（1）');
     expect(html).toContain('未验证（1）');
     expect(html).not.toContain('<h2 id="verified-items">已验证功能</h2>');
+  });
+
+  it('groups manual-review requirements with their source and execution detail', () => {
+    const reviewReport: ReportDetailType = {
+      ...report,
+      verifiedItems: [{
+        title: '待人工补充验收条件',
+        sourceRequirement: '登录后删除账户',
+        detail: '涉及禁止自动执行的删除操作。',
+        evidenceIds: [],
+        status: 'manual_review',
+      }],
+    };
+
+    const html = renderToStaticMarkup(<ReportDetail jobId="job-id" status="completed" report={reviewReport} errorMessage={null} />);
+
+    expect(html).toContain('待人工补充（1）');
+    expect(html).toContain('原始需求：登录后删除账户');
+    expect(html).toContain('执行结果：涉及禁止自动执行的删除操作。');
+    expect(html).toContain('待人工补充');
   });
 
   it('按结论、证据、问题顺序展示报告', () => {

@@ -43,6 +43,21 @@ describe('ReportPdfDocument', () => {
     expect(lines).toContain('未验证（1）');
   });
 
+  it('includes manual-review requirements and execution details in PDF lines', () => {
+    const manualReviewReport: Parameters<typeof ReportPdfDocument>[0]['report'] = {
+      verdict: 'at_risk', score: 70, confidence: 65, summary: '需要补充验收条件', issues: [],
+      verifiedItems: [{
+        title: '待人工补充验收条件', sourceRequirement: '登录后删除账户',
+        detail: '涉及禁止自动执行的删除操作。', evidenceIds: [], status: 'manual_review',
+      }],
+    };
+    const lines = reportPdfLines?.(manualReviewReport);
+
+    expect(lines).toContain('待人工补充（1）');
+    expect(lines).toContain('原始需求：登录后删除账户');
+    expect(lines).toContain('执行结果：涉及禁止自动执行的删除操作。');
+  });
+
   it('仅以安全报告 DTO 渲染 PDF 内容', async () => {
     const output = await renderToString(
       <ReportPdfDocument

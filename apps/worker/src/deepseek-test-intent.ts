@@ -1,5 +1,5 @@
-import { testIntentSchema } from '@vibeverify/prompting';
-import type { TestIntent } from '@vibeverify/prompting';
+import { acceptancePlanSchema } from '@vibeverify/prompting';
+import type { AcceptancePlan } from '@vibeverify/prompting';
 
 type TestIntentInput = { request: string };
 type TestIntentDependencies = {
@@ -8,12 +8,18 @@ type TestIntentDependencies = {
   fetch: (input: string, init?: RequestInit) => Promise<Response>;
 };
 
-function conservativeIntent(): TestIntent {
-  return { checks: [] };
+function conservativeIntent(request: string): AcceptancePlan {
+  return {
+    criteria: [],
+    manualReview: [{
+      requirement: request,
+      reason: '无法将需求转换为受限浏览器步骤；请补充页面可见文本、控件名称和预期结果。',
+    }],
+  };
 }
 
 export function createDeepSeekTestIntentGenerator(dependencies: TestIntentDependencies) {
-  return async (input: TestIntentInput): Promise<TestIntent> => {
+  return async (input: TestIntentInput): Promise<AcceptancePlan> => {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
         const response = await dependencies.fetch('https://api.deepseek.com/chat/completions', {
@@ -28,7 +34,7 @@ export function createDeepSeekTestIntentGenerator(dependencies: TestIntentDepend
           messages: [
             {
               role: 'system',
-              content: '只输出一个 JSON 对象，不要 Markdown。将用户需求映射为 checks。每项只能使用 homepage、task_list_add、task_list_blank、task_list_toggle、task_list_filter 之一；必须包含 title 和 expectedText；需要操作文本时使用 actionText。task_list_blank 和 task_list_filter 必须提供操作后不可见的 absentText。禁止输出 CSS 选择器、XPath、JavaScript、命令或任何执行代码。',
+              content: '只输出一个 AcceptancePlan JSON 对象，不要 Markdown。每项 criterion 必须引用用户需求原文。steps 只能使用 assert_text_visible、assert_text_hidden、fill_input、click_button、check_checkbox。禁止 URL、CSS 选择器、XPath、JavaScript、命令、登录、支付、删除、上传和外部跳转。无法安全映射的需求写入 manualReview。',
             },
             { role: 'user', content: JSON.stringify({ ...input, retry: attempt === 1 }) },
           ],
@@ -38,12 +44,12 @@ export function createDeepSeekTestIntentGenerator(dependencies: TestIntentDepend
         const body = (await response.json()) as { choices?: Array<{ message?: { content?: unknown } }> };
         const content = body.choices?.[0]?.message?.content;
         if (typeof content !== 'string') continue;
-        const intent = testIntentSchema.safeParse(JSON.parse(content));
+        const intent = acceptancePlanSchema.safeParse(JSON.parse(content));
         if (intent.success) return intent.data;
       } catch {
         // The fallback is an allowlisted Worker plan; no model text is retained or executed.
       }
     }
-    return conservativeIntent();
+    return conservativeIntent(input.request);
   };
 }

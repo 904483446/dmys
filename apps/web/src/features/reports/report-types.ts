@@ -2,8 +2,10 @@ import { z } from 'zod';
 
 const verifiedItemSchema = z.object({
   title: z.string(),
+  sourceRequirement: z.string().optional(),
+  detail: z.string().optional(),
   evidenceIds: z.array(z.string()),
-  status: z.enum(['verified', 'not_verified']),
+  status: z.enum(['verified', 'not_verified', 'manual_review']),
 });
 
 const issueSchema = z.object({
@@ -46,6 +48,7 @@ export function formatVerificationItemStatus(status: ReportDetail['verifiedItems
   return {
     verified: '已验证',
     not_verified: '未验证',
+    manual_review: '待人工补充',
   }[status];
 }
 
@@ -83,7 +86,11 @@ export function toReportDetail(input: unknown): ReportDetail {
     score: report.score,
     confidence: report.confidence,
     summary: report.summary,
-    verifiedItems: z.array(verifiedItemSchema).parse(report.verified_items),
+    verifiedItems: z.array(verifiedItemSchema).parse(report.verified_items).map((item) => ({
+      ...item,
+      sourceRequirement: item.sourceRequirement ?? '历史报告未保留原始需求',
+      detail: item.detail ?? '历史报告未保留执行结果',
+    })),
     issues: z.array(issueSchema).parse(report.issues),
   };
 }

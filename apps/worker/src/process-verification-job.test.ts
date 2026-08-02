@@ -12,6 +12,36 @@ const successfulReport = async () => ({
 });
 
 describe('processVerificationJob', () => {
+  it('forwards unplannable requirements to the report as manual review items', async () => {
+    const generateReport = vi.fn().mockResolvedValue(await successfulReport());
+
+    await processVerificationJob(
+      {
+        createWorkspace: async () => 'temporary-workspace',
+        removeWorkspace: vi.fn().mockResolvedValue(undefined),
+        prepareSource: async () => ({
+          projectDirectory: 'temporary-workspace',
+          packageJson: { dependencies: { vite: '^6.0.0' }, scripts: { build: 'vite build', dev: 'vite --host 0.0.0.0' } },
+        }),
+        run: async () => ({ exitCode: 0, output: 'ok' }),
+        startProject: async () => ({ stop: async () => undefined }),
+        generateTestIntent: async () => ({
+          criteria: [],
+          manualReview: [{ requirement: '登录后删除账户', reason: '涉及禁止自动执行的删除操作。' }],
+        }),
+        collectBrowserEvidence: async () => ({ homepageReachable: true, evidenceIds: ['homepage-status'], checks: [] }),
+        generateReport,
+        saveReport: vi.fn().mockResolvedValue(undefined),
+        updateStatus: vi.fn().mockResolvedValue(undefined),
+      },
+      { id: 'job-id', sourceSnapshot: { sourceStoragePath: 'source.zip' }, request: '登录后删除账户' },
+    );
+
+    expect(generateReport).toHaveBeenCalledWith(expect.objectContaining({
+      manualReview: [{ requirement: '登录后删除账户', reason: '涉及禁止自动执行的删除操作。' }],
+    }));
+  });
+
   it('fails without saving a report when no report model is configured', async () => {
     const saveReport = vi.fn().mockResolvedValue(undefined);
 

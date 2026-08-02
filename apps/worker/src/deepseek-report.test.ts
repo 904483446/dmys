@@ -175,6 +175,25 @@ describe('createDeepSeekReportGenerator', () => {
     })).resolves.toMatchObject({ verifiedItems: [] });
   });
 
+  it('adds unplannable requirements as manual-review facts instead of fabricated checks', async () => {
+    const generate = createDeepSeekReportGenerator({
+      apiKey: 'test-key', model: 'deepseek-chat',
+      fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+        verdict: 'at_risk', score: 70, confidence: 60, summary: '需要人工确认', verifiedItems: [], issues: [],
+      }) } }] }))),
+    });
+
+    await expect(generate({
+      request: '登录后删除账户', evidenceIds: ['homepage-status'], homepageReachable: true, checks: [],
+      manualReview: [{ requirement: '登录后删除账户', reason: '涉及禁止自动执行的删除操作。' }],
+    })).resolves.toMatchObject({
+      verifiedItems: [{
+        title: '待人工补充验收条件', sourceRequirement: '登录后删除账户',
+        detail: '涉及禁止自动执行的删除操作。', status: 'manual_review', evidenceIds: [],
+      }],
+    });
+  });
+
   it.each([
     ['WARNING', 'at_risk'],
     ['needs-improvement', 'at_risk'],

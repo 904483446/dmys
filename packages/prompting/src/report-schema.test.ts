@@ -35,4 +35,17 @@ describe('verificationReportSchema', () => {
       }).success,
     ).toBe(false);
   });
+
+  it('accepts manual-review items without treating them as failed execution', () => {
+    expect(
+      verificationReportSchema.safeParse({
+        verdict: 'at_risk', score: 70, confidence: 65, summary: '需补充一个验收条件',
+        verifiedItems: [{
+          title: '导出报表', sourceRequirement: '点击导出', detail: '未执行',
+          status: 'manual_review', evidenceIds: [],
+        }],
+        issues: [],
+      }).success,
+    ).toBe(true);
+  });
 });
